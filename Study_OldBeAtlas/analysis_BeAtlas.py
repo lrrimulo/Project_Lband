@@ -16,16 +16,6 @@ import matplotlib.pyplot as plt
 ### HDUST's output.
 fileobservables = "observables_BeAtlas.txt"
 
-### The domain of OldBeAtlas: 
-npar=['3.0','3.5','4.0','4.5']
-sigpar=['0.00','0.02','0.05','0.12','0.28','0.68','1.65','4.00']
-Mpar=['03.80','04.20','04.80','05.50','06.40','07.70','08.60',\
-    '09.60','10.80','12.50','14.60']
-obpar=['1.10','1.20','1.30','1.40','1.45']
-
-cosipar=[   '-4.3711e-08','0.11147','0.22155','0.33381','0.44464',\
-            '0.55484','0.66653','0.77824','0.88862','1.0']
-
 
 ### Reading the file with the observables generated from HDUST's output.
 g0 = open(fileobservables,'r')
@@ -151,9 +141,21 @@ for ilinha in range(0,len(g0linhas)):
 
 
 
+### The domain of OldBeAtlas: 
+npar=['3.0','3.5','4.0','4.5']
+sigpar=['0.00','0.02','0.05','0.12','0.28','0.68','1.65','4.00']
+Mpar=['03.80','04.20','04.80','05.50','06.40','07.70','08.60',\
+    '09.60','10.80','12.50','14.60']
+obpar=['1.10','1.20','1.30','1.40','1.45']
 
+cosipar=[   '-4.3711e-08','0.11147','0.22155','0.33381','0.44464',\
+            '0.55484','0.66653','0.77824','0.88862','1.0']
 
 def attribution_procedure(lista_read,Nelems):
+    """
+    This function creates the 6-array associated with the 'lista_read' 
+    given. (5 of these dimensions are the 5 dimensions of the BeAtlas grid.)
+    """
     
     array = np.zeros((len(npar),len(sigpar),len(Mpar),len(obpar),\
             len(cosipar),Nelems))
@@ -235,7 +237,9 @@ LINE_HUMPHREY25_lbd = spt.hydrogenlinewl(25, 6)*1e6
 ##########################################################
 ##########################################################
 ### Now, comes the part 1 of the analysis: making lots of plots!
+### Some of these plots will be on the paper.
 
+figures = "Figures/"
 
 #############################
 ### TODO (Fredy): plots of the SEDs and line profiles
@@ -253,7 +257,7 @@ if 1==2:
 
 #############################
 ### Plotting Lenorzer Diagrams
-if 1==1:
+if 1==2:
 
     ### Parameters for the double arcsinh scaling:
     up1 = 1.
@@ -460,7 +464,7 @@ if 1==1:
                 up1,up2,down1,down2),lrr.scale_two_arcsinh(8.,\
                 up1,up2,down1,down2)])
         
-        plt.savefig("LENORZER_"+figname[k])
+        plt.savefig(figures+"LENORZER_"+figname[k])
 
 
 
@@ -469,7 +473,7 @@ if 1==1:
 
 #############################
 ### Plotting Humphrey's diagrams
-if 1==2:
+if 1==1:
     
     ### Parameters for the double arcsinh scaling:
     up1 = 1.
@@ -803,7 +807,7 @@ if 1==2:
         plt.xlim([3.4,4.1])
         plt.ylim([2.5,-2.5])
         
-        plt.savefig("HUMPHREYS_"+figname[k])
+        plt.savefig(figures+"HUMPHREYS_"+figname[k])
 
 
 
@@ -924,7 +928,7 @@ if 1==2:
     plt.xlim([-3.2,-1.0])
     plt.ylim([YLmax,YLmin])
         
-    plt.savefig("CMD_"+figname_now)
+    plt.savefig(figures+"CMD_"+figname_now)
 
 
 
