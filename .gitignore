@@ -5,7 +5,7 @@
 *.pyc
 
 OldBeAtlas/*
-documents/
-MedidasLogs/
+#documents/
+#MedidasLogs/
 
 
