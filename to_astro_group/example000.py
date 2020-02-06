@@ -21,7 +21,7 @@ def lnprob(x, mu, sigg):
 def lnprobsine(x):
     ### Returns A+sin^2(3*pi*x)
     
-    A=0.00 ### Try A<0 to see emcee giving an error message!
+    A=0.001 ### Try A<0 to see emcee giving an error message!
     if 0. <= x <= 1.:
         return np.log(A+np.sin(x*3.*np.pi)**2)
     else:
@@ -35,6 +35,20 @@ def lnMBdistribution(x,aa):
             np.exp(-0.5*x**2./aa**2.))
     else:
         return -np.inf
+        
+        
+        
+def lntriangle(x,h,b):
+    ### Returns a triangular shaped distribution
+    if 0. <= x < 0.5*b:
+        return np.log(2.*h/b*x)
+    elif 0.5*b <= x < b:
+        return np.log(2.*h-2.*h/b*x)
+    else:
+        return -np.inf
+        
+
+        
 
 
 ####################################
@@ -46,9 +60,10 @@ ndim = 1    ### Number of dimensions of the distribution.
             ### (In this simple example, it is one.)
 
 ### Below, uncomment one distribution with its parameters:
-disttype = "gaussian"; means = 0.5; sigg = 0.1
+#disttype = "gaussian"; means = 0.5; sigg = 0.1
 #disttype = "sine"
-#disttype = "MB"; aa=0.3
+disttype = "MB"; aa=0.3
+#disttype = "triangular"; h = 1.; b = 1.
 
 ### Choose an initial set of positions for the walkers.
 ### (It is a list of ndim-dimensional arrays.)
@@ -67,6 +82,9 @@ if disttype == "sine":
 if disttype == "MB":
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnMBdistribution, \
         args=[aa], a=2, threads=1)
+if disttype == "triangular":
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lntriangle, \
+        args=[h,b], a=2, threads=1)
 
 
 ### Running MCMC:

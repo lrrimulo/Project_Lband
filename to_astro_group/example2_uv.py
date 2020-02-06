@@ -106,12 +106,12 @@ uvlims= [
 ### (Choose 0 <= x <= 1 and 0 <= y <= 1.) 
 obs_x=0.5 
 obs_sigmax=0.05
-obs_y=0.8
+obs_y=0.2
 obs_sigmay=0.05
 
 ### 
 constrain_x=False
-constrain_y=False
+constrain_y=True
 constrain_xy=False
 
 ###

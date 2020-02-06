@@ -29,14 +29,14 @@ ji=[]
 for i in range(1,N):
     for j in range(i+1,N+1):
         lamb = spt.hydrogenlinewl(j, i)*1e6
-        if 3.4 <= lamb <= 4.1:
+        if 3.2 <= lamb <= 4.1:
             selectedlines.append([j,i,lamb])
             lambs.append(lamb)
             ji.append([j,i])
-#for ii in range(0,len(selectedlines)):
-#    print(selectedlines[ii])
+for ii in range(0,len(selectedlines)):
+    print(selectedlines[ii])
 
-#print(lambs)
-#print(sorted(lambs))
+print(lambs)
+print(sorted(lambs))
 
 
