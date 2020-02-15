@@ -142,33 +142,35 @@ SNratios = SNratios_procedure(SNratios, files_fullsed_new, fullsed_contents)
 ### at the end of this program.
 
 ### Central lambda [microns], width [km/s]
-lbc_Bralpha = [4.052248,1000.]
-lbc_Pfgamma = [3.740536,1000.]
-lbc_Brgamma = [2.1661178,1000.]
+lbc_Bralpha = [spt.hydrogenlinewl(5, 4)*1e6,1000.]
+lbc_Pfgamma = [spt.hydrogenlinewl(8, 5)*1e6,1000.]
+lbc_Brgamma = [spt.hydrogenlinewl(7, 4)*1e6,1000.]
 lbc_Humphreyoth =   [
-                    [4.020843,1000.,"Humphrey14"],
-                    [3.907525,1000.,"Humphrey15"],
-                    [3.819428,1000.,"Humphrey16"],
-                    ###[3.749370,1000.,"Humphrey17"],  ### This line merges with Pfgamma
-                    [3.692611,1000.,"Humphrey18"],
-                    [3.645901,1000.,"Humphrey19"],
-                    [3.606946,1000.,"Humphrey20"],
-                    [3.574082,1000.,"Humphrey21"],
-                    [3.546079,1000.,"Humphrey22"],
-                    [3.522003,1000.,"Humphrey23"],
-                    [3.501142,1000.,"Humphrey24"],
-                    [3.482938,1000.,"Humphrey25"]   ### The last Humphrey 
+                    [spt.hydrogenlinewl(14, 6)*1e6,1000.,"Humphrey14"],
+                    [spt.hydrogenlinewl(15, 6)*1e6,1000.,"Humphrey15"],
+                    [spt.hydrogenlinewl(16, 6)*1e6,1000.,"Humphrey16"],
+                    ###[spt.hydrogenlinewl(17, 6)*1e6,1000.,"Humphrey17"],  
+                            ### This line merges with Pfgamma
+                    [spt.hydrogenlinewl(18, 6)*1e6,1000.,"Humphrey18"],
+                    [spt.hydrogenlinewl(19, 6)*1e6,1000.,"Humphrey19"],
+                    [spt.hydrogenlinewl(20, 6)*1e6,1000.,"Humphrey20"],
+                    [spt.hydrogenlinewl(21, 6)*1e6,1000.,"Humphrey21"],
+                    [spt.hydrogenlinewl(22, 6)*1e6,1000.,"Humphrey22"],
+                    [spt.hydrogenlinewl(23, 6)*1e6,1000.,"Humphrey23"],
+                    [spt.hydrogenlinewl(24, 6)*1e6,1000.,"Humphrey24"],
+                    [spt.hydrogenlinewl(25, 6)*1e6,1000.,"Humphrey25"]   
+                                                    ### The last Humphrey 
                                                     ### transition calculated 
                                                     ### by HDUST
                     ]
 lbc_Bracketoth =    [
-                    [0.656461,1000.,"Halpha"],
-                    [0.486271,1000.,"Hbeta"],
-                    [0.434169,1000.,"Hgamma"]
+                    [spt.hydrogenlinewl(3, 2)*1e6,1000.,"Halpha"],
+                    [spt.hydrogenlinewl(4, 2)*1e6,1000.,"Hbeta"],
+                    [spt.hydrogenlinewl(5, 2)*1e6,1000.,"Hgamma"]
                     ]
 
 
-### Limits of the BL and RL bands [Angstroms], as defined by 
+### Limits of the BL and RL bands [microns], as defined by 
 ### Mennickent et al. 2009PASP..121..125M
 lamb1_BL = 3.41 ; lamb2_BL = 3.47
 lamb1_RL = 3.93 ; lamb2_RL = 4.00
@@ -535,43 +537,43 @@ print("Writing in the external file")
 f0=open(outputfile,"w")
 
 ### Writing a few explanations in the output file:
-f0.write("This is the output file of observables_OldBeatlas.py. It contains lots of "+"\n")
-f0.write("observables calculated from the SEDs computed by HDUST. This output is "+"\n")
-f0.write("used to feed the main program \"analysis_BeAtlas.py\"." +"\n")
-f0.write("\n")
-f0.write("Explanations of the lines:"+"\n")
-f0.write("\n")
-f0.write("* MODEL: contains the values of n, Sigma [g/cm2], M [Msun] and oblateness, "+"\n")
-f0.write("and it marks the beginning of the subfolder of parameters for that model. "+"\n")
-f0.write("(The model is completely specified by these parameters.)"+"\n")
-f0.write("\n")
-f0.write("* SOURCE: contains the values of M [Msun], Rpole [Rsun], W, L [Lsun], beta, "+"\n")
-f0.write("associated with that disk model."+"\n")
-f0.write("* TEMP_R and TEMP_T: the first contains list R/Req for the plane of the disk; "+"\n")
-f0.write("the second, contains the temperature in the plane of the disk [K]."+"\n")
-f0.write("* COSI: contains the cosine of the inclination angle i, "+"\n")
-f0.write("and it marks the beginning of the subfolder of parameters for that model and "+"\n")
-f0.write("inclination."+"\n")
-f0.write("\n")
-f0.write("* SNRATIOS: contains tryads of: left boundary [microns], right boundary [microns], "+"\n")
-f0.write("S/N ratio obtained (or tried) from the SEDs between the previous two boundaries."+"\n")
-f0.write("* UBVRI: Contains the absolute magnitudes U, B, V, R, I [mag]."+"\n")
-f0.write("* JHK: Contains the absolute magnitudes J, H, K [mag]."+"\n")
-f0.write("* HALPHA_SOAR: Contains the absolute magnitude from SOAR's Halpha filter [mag], "+"\n")
-f0.write("under the assumption that the magnitude of Vega is defined to be 9999 mag."+"\n")
-f0.write("* WISEfilters: Contains the absolute magnitudes W1, W2, W3, W4 [mag]."+"\n")
-f0.write("* ALPHA_WISE: contains the spectral indexes associated with W1-W2, W2-W3, W3-W4."+"\n")
-f0.write("* IRAC_filters: Contains the absolute magnitudes in the four IRAC filters."+"\n")
-f0.write("* LINE_XXX: For the specific line XXX, contains: flux (distance = 10pc) [erg/s cm2], "+"\n")
-f0.write("EW [angstroms], peak separation [km/s], a type of gaussian FWHM [km/s], "+"\n")
-f0.write("area of the gaussian fit [km/s]."+"\n")
-f0.write("* BL_FLUX: Contains the (Mennickent's \"blue\") flux [erg/s cm2] between "+"\n")
-f0.write("lbd1 and lbd2, lbd1 [microns], lbd2 [microns]."+"\n")
-f0.write("* RL_FLUX: Contains the (Mennickent's \"red\") flux [erg/s cm2] between "+"\n")
-f0.write("lbd1 and lbd2, lbd1 [microns], lbd2 [microns]."+"\n")
-f0.write("\n")
-f0.write("\n")
-f0.write("\n")
+f0.write("# This is the output file of observables_OldBeatlas.py. It contains lots of "+"\n")
+f0.write("# observables calculated from the SEDs computed by HDUST. This output is "+"\n")
+f0.write("# used to feed the main program \"analysis_BeAtlas.py\"." +"\n")
+f0.write("# \n")
+f0.write("# Explanations of the lines:"+"\n")
+f0.write("# \n")
+f0.write("# * MODEL: contains the values of n, Sigma [g/cm2], M [Msun] and oblateness, "+"\n")
+f0.write("# and it marks the beginning of the subfolder of parameters for that model. "+"\n")
+f0.write("# (The model is completely specified by these parameters.)"+"\n")
+f0.write("# \n")
+f0.write("# * SOURCE: contains the values of M [Msun], Rpole [Rsun], W, L [Lsun], beta, "+"\n")
+f0.write("# associated with that disk model."+"\n")
+f0.write("# * TEMP_R and TEMP_T: the first contains list R/Req for the plane of the disk; "+"\n")
+f0.write("# the second, contains the temperature in the plane of the disk [K]."+"\n")
+f0.write("# * COSI: contains the cosine of the inclination angle i, "+"\n")
+f0.write("# and it marks the beginning of the subfolder of parameters for that model and "+"\n")
+f0.write("# inclination."+"\n")
+f0.write("# \n")
+f0.write("# * SNRATIOS: contains tryads of: left boundary [microns], right boundary [microns], "+"\n")
+f0.write("# S/N ratio obtained (or tried) from the SEDs between the previous two boundaries."+"\n")
+f0.write("# * UBVRI: Contains the absolute magnitudes U, B, V, R, I [mag]."+"\n")
+f0.write("# * JHK: Contains the absolute magnitudes J, H, K [mag]."+"\n")
+f0.write("# * HALPHA_SOAR: Contains the absolute magnitude from SOAR's Halpha filter [mag], "+"\n")
+f0.write("# under the assumption that the magnitude of Vega is defined to be 9999 mag."+"\n")
+f0.write("# * WISEfilters: Contains the absolute magnitudes W1, W2, W3, W4 [mag]."+"\n")
+f0.write("# * ALPHA_WISE: contains the spectral indexes associated with W1-W2, W2-W3, W3-W4."+"\n")
+f0.write("# * IRAC_filters: Contains the absolute magnitudes in the four IRAC filters."+"\n")
+f0.write("# * LINE_XXX: For the specific line XXX, contains: flux (distance = 10pc) [erg/s cm2], "+"\n")
+f0.write("# EW [angstroms], peak separation [km/s], a type of gaussian FWHM [km/s], "+"\n")
+f0.write("# area of the gaussian fit [km/s]."+"\n")
+f0.write("# * BL_FLUX: Contains the (Mennickent's \"blue\") flux [erg/s cm2] between "+"\n")
+f0.write("# lbd1 and lbd2, lbd1 [microns], lbd2 [microns]."+"\n")
+f0.write("# * RL_FLUX: Contains the (Mennickent's \"red\") flux [erg/s cm2] between "+"\n")
+f0.write("# lbd1 and lbd2, lbd1 [microns], lbd2 [microns]."+"\n")
+f0.write("# \n")
+f0.write("# \n")
+f0.write("# \n")
 
 
 

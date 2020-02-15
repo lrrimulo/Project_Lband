@@ -12,7 +12,7 @@ import glob as glob
 import read_data as read_data
 import read_everything as read_everything
 
- 
+
 #############################
 ### This is the zeroth part of the analysis: reading everything (or almost!).
 ### We will read the observables calculated from the SED's (which were calculated 
@@ -178,7 +178,6 @@ npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
 ### Now, creating the arrays for the observables of 4+1 model parameters
 ### The arrays will be functions of: (i_n, i_Sig, i_M, i_ob, i_cosi, #)
 
-
 def attribution_procedure5(lista_read,Nelems):
     """
     This function creates the 6-array associated with the 'lista_read' 
@@ -306,17 +305,7 @@ TEMP_T = attribution_procedure4(TEMP_T_read,Nelems)
 
 
 
-
-
-
-
-### TODO: Leandro:
-### Develop interpolating routine to fill the NaNs.
-### Find the hyper-rectangle (with the smallest hypervolume) that
-### contains the point and the other points... 
-
-
-import sys; sys.exit()
+#import sys; sys.exit()
 
 
 #############################
@@ -457,7 +446,7 @@ if 1==2:
 
 
 #############################
-### TODO (Fredy): plots of the SEDs and line profiles
+### TODO: plots of the SEDs and line profiles
 if 1==2:
 
     import read_everything

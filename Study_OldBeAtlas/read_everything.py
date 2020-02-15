@@ -230,7 +230,7 @@ def check_completeness(files_fullsed_new):
     This function checks what fraction of the grid was already computed 
     and what are the missing models.
     
-    WARNING: It assumes that the grid is hypercubic. This however is not 
+    WARNING: It assumes that the grid is hyperrectangular. This however is not 
     the case. Hence, this program needs correction!
     """
     ### The domain of the grid of HDUST models:

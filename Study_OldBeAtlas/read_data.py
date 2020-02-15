@@ -282,43 +282,46 @@ def List_Stars(to_return):
 ### 
 
 def returnDATA_LBAND():
+    """
+    
+    """
 
     data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = List_Stars("stars")
     DATA_LBAND = []
     for i in range(0,len(HDnames)):
         DATA_LBAND.append(  [
-                            HDnames[i],Starnames[i],\
-                            [], ### [2] dist, err_dist, source
-                            YYYYMMDD_LBAND[i],
-                            [
-                            [], ### [4][0] indexes of transitions
-                            [], ### [4][1] theoretical_lambda [Angstroms]
-                            [], ### [4][2] goodness
-                            [], ### [4][3] Center_old, Center_new, err_center [Angstroms]
-                            [], ### [4][4] continuum, err_continuum
-                            [], ### [4][5] flux, err_flux [erg s^-1 cm^-2]
-                            [], ### [4][6] EW, err_EW [Angstroms]
-                            [], ### [4][7] core, err_core [?]
-                            [], ### [4][8] gaussianFWHM, err [Angstroms]
-                            []  ### [4][9] lorentzianFWHM, err [Angstroms]
-                            ],
-                            [
-                            [], ### [5][0] F(B), errF(B), lamb1, lamb2 [erg s^-1 cm^-2],[A]
-                            [], ### [5][1] F(R), errF(R), lamb1, lamb2 [erg s^-1 cm^-2],[A]
-                            [], ### [5][2] B, errB, R, errR     [mag]
-                            [], ### [5][3] MB, errMB, MR, errMR [mag]
-                            []  ### [5][4] alphaL, erralphaL
-                            ],
-                            [
-                            "", ### [6][0] date of WISE measurements
-                            [], ### [6][1] W1, errW1, W2, errW2, W3, errW3, W4, errW4
-                            [], ### [6][2] alphaW1W2, erralphaW1W2 
-                            [], ### [6][3] alphaW2W3, erralphaW2W3 
-                            [], ### [6][4] alphaW3W4, erralphaW3W4
-                            []  ### [6][5] MW1, errMW1, MW2, errMW2, MW3, errMW3, MW4, errMW4 
-                            ],
-                            "", ### [7] Evolutionary status
-                            SIMBAD_Spt[i]  ### [8] SIMBAD Spectral type
+                HDnames[i],Starnames[i],\
+                [], ### [2] dist, err_dist, source
+                YYYYMMDD_LBAND[i],
+                [
+                [], ### [4][0] indexes of transitions
+                [], ### [4][1] theoretical_lambda [Angstroms]
+                [], ### [4][2] goodness
+                [], ### [4][3] Center_old, Center_new, err_center [Angstroms]
+                [], ### [4][4] continuum, err_continuum
+                [], ### [4][5] flux, err_flux [erg s^-1 cm^-2]
+                [], ### [4][6] EW, err_EW [Angstroms]
+                [], ### [4][7] core, err_core [?]
+                [], ### [4][8] gaussianFWHM, err [Angstroms]
+                []  ### [4][9] lorentzianFWHM, err [Angstroms]
+                ],
+                [
+                [], ### [5][0] F(B), errF(B), lamb1, lamb2 [erg s^-1 cm^-2],[A]
+                [], ### [5][1] F(R), errF(R), lamb1, lamb2 [erg s^-1 cm^-2],[A]
+                [], ### [5][2] B, errB, R, errR     [mag]
+                [], ### [5][3] MB, errMB, MR, errMR [mag]
+                []  ### [5][4] alphaL, erralphaL
+                ],
+                [
+                "", ### [6][0] date of WISE measurements
+                [], ### [6][1] W1, errW1, W2, errW2, W3, errW3, W4, errW4
+                [], ### [6][2] alphaW1W2, erralphaW1W2 
+                [], ### [6][3] alphaW2W3, erralphaW2W3 
+                [], ### [6][4] alphaW3W4, erralphaW3W4
+                []  ### [6][5] MW1, errMW1, MW2, errMW2, MW3, errMW3, MW4, errMW4 
+                ],
+                "", ### [7] Evolutionary status
+                SIMBAD_Spt[i]  ### [8] SIMBAD Spectral type
                             ]   )
 
 
@@ -768,6 +771,9 @@ def returnDATA_LBAND():
 ### 
 
 def LBAND_lines_extract(DATA_LBAND):
+    """
+    
+    """
 
     max_goodness = 3.
 
