@@ -20,256 +20,270 @@ import pyhdust.spectools as spt
 
 def List_Stars(to_return):
     """
-    
+    * 'to_return' = "stars", If to return basic data on the Be stars
+    * 'to_return' = "Cesar", If to return ...
+    * 'to_return' = "Cesar_BR", If to return ...
+    * 'to_return' = "dist", If to return ...
+    * 'to_return' = "WISE", If to return ...
     """
     
-    ### 
-    
-    data_folder = "./../MedidasLogs/"
-
-    HDnames =   [
-                "144",   
-                "4180",
-                "5394",  
-                "6811",  
-                "11606", 
-                "20336", 
-                "23302", 
-                "23480", 
-                "23630", 
-                "23862", 
-                "187811",
-                "191610",
-                "193009",
-                "194335",
-                "194883",
-                "195907",
-                "197419",
-                "200310",
-                "202904",
-                "204722",
-                "208057",
-                "210129",
-                "217675",
-                "217891"
-                ]
-
-    Starnames =     [
-                    "10 Cas",
-                    "$o$ Cas",
-                    "$\\gamma$ Cas",
-                    "$\\phi$ And",
-                    "V777 Cas",
-                    "Bk Cam",
-                    "17 Tau",
-                    "23 Tau",
-                    "25 Tau",
-                    "28 Tau",
-                    "12 Vul",
-                    "28 Cyg",
-                    "V2113 Cyg",
-                    "V2119 Cyg",
-                    "V2120 Cyg",
-                    "V2123 Cyg",
-                    "V568 Cyg",
-                    "60 Cyg",
-                    "$\\upsilon$ Cyg",
-                    "V2162 Cyg",
-                    "16 Peg",
-                    "25 Peg",
-                    "$o$ And",
-                    "$\\beta$ Psc"
-                    ]
-                    
-    SIMBAD_Spt =    [
-                    "B9IIIe",
-                    "B5IIIe",
-                    "B0.5IVpe",
-                    "B5IIIe",
-                    "B2Vne",
-                    "B2.5Vn(e)",
-                    "B6IIIe",
-                    "B6IV(e)",
-                    "B7III",
-                    "B8Vne",
-                    "B2.5Ve",
-                    "B2.5Ve",
-                    "B1V:nnpe",
-                    "B2IIIe",
-                    "B2Ve",
-                    "B1.5V",
-                    "B2IV-Ve",
-                    "B1Ve",
-                    "B2Vne",
-                    "B1.5IV:np",
-                    "B3Ve",
-                    "B7Vne",
-                    "B6IV/V\_sh",
-                    "B6Ve"
-                    ]
-
-    YYYYMMDD_LBAND =    [
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01",
-                        "2017 10 01"
-                        ]
-
+    ### If to return basic data on the Be stars:
     if to_return == "stars":
+        ### Directory of the location of the data on the Be stars
+        data_folder = "./../MedidasLogs/"
+        ### List of HD names in ascending order
+        HDnames =   [
+                    "144",   
+                    "4180",
+                    "5394",  
+                    "6811",  
+                    "11606", 
+                    "20336", 
+                    "23302", 
+                    "23480", 
+                    "23630", 
+                    "23862", 
+                    "187811",
+                    "191610",
+                    "193009",
+                    "194335",
+                    "194883",
+                    "195907",
+                    "197419",
+                    "200310",
+                    "202904",
+                    "204722",
+                    "208057",
+                    "210129",
+                    "217675",
+                    "217891"
+                    ]
+        ### List of correspondent popular names of the stars
+        Starnames =     [
+                        "10 Cas",
+                        "$o$ Cas",
+                        "$\\gamma$ Cas",
+                        "$\\phi$ And",
+                        "V777 Cas",
+                        "Bk Cam",
+                        "17 Tau",
+                        "23 Tau",
+                        "25 Tau",
+                        "28 Tau",
+                        "12 Vul",
+                        "28 Cyg",
+                        "V2113 Cyg",
+                        "V2119 Cyg",
+                        "V2120 Cyg",
+                        "V2123 Cyg",
+                        "V568 Cyg",
+                        "60 Cyg",
+                        "$\\upsilon$ Cyg",
+                        "V2162 Cyg",
+                        "16 Peg",
+                        "25 Peg",
+                        "$o$ And",
+                        "$\\beta$ Psc"
+                        ]
+        ### List of spectral types found in the SIMBAD web base
+        SIMBAD_Spt =    [
+                        "B9IIIe",
+                        "B5IIIe",
+                        "B0.5IVpe",
+                        "B5IIIe",
+                        "B2Vne",
+                        "B2.5Vn(e)",
+                        "B6IIIe",
+                        "B6IV(e)",
+                        "B7III",
+                        "B8Vne",
+                        "B2.5Ve",
+                        "B2.5Ve",
+                        "B1V:nnpe",
+                        "B2IIIe",
+                        "B2Ve",
+                        "B1.5V",
+                        "B2IV-Ve",
+                        "B1Ve",
+                        "B2Vne",
+                        "B1.5IV:np",
+                        "B3Ve",
+                        "B7Vne",
+                        "B6IV/V\_sh",
+                        "B6Ve"
+                        ]
+        ### Date of measurement of L-band of the stars
+        YYYYMMDD_LBAND =    [
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01",
+                            "2017 10 01"
+                            ]
+        ### 
         return data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND
 
-    ###
 
-    Cesar = "Cesar/DatosBeStarsL_lrrimulo/"
-    Cesar_correspond =  [
-                        "Cas10.dat",
-                        "OmiCas.dat",
-                        "gCas.dat",
-                        None,
-                        "V777.dat",
-                        "BkCam.dat",
-                        None,
-                        "Tau23.dat",
-                        "Tau25.dat",
-                        "28Tau.dat",
-                        None,
-                        "Cyg28.dat",
-                        "V2113.dat",
-                        "V2119.dat",
-                        "V2120.dat",
-                        "V2123.dat",
-                        "V568.dat",
-                        "60Cyg.dat",
-                        "UpsCyg.dat",
-                        "V2162.dat",
-                        None,
-                        "Peg25.dat",
-                        "oAnd.dat",
-                        "betPsc.dat"
-                        ]
-                        
+
+    ### If to return ...
     if to_return == "Cesar":
-        return Cesar, Cesar_correspond
-                        
-    ### 
-                        
-    Cesar_BR = "Cesar/"
-    Cesar_BR_file = "FluxRatio_Be_Stars.txt"
-    Cesar_BR_correspond =   [
-                            "10_Cas",
-                            "omi_Cas",   
-                            "gamma_Cas",
-                            "phi_And",
-                            "V777_Cas",
-                            "Bk_Cam",
-                            "17_Tau",
-                            "23_Tau",
-                            "25_Tau",
-                            "28_Tau",
-                            "12_Vul",
-                            "28_Cyg",
-                            "V2113_Cyg",
-                            "V2119_Cyg",
-                            "V2120_Cyg",
-                            "V2123_Cyg",
-                            "V568_Cyg",
-                            "60_Cyg",
-                            "ups_Cyg",
-                            "V2162_Cyg",
-                            "16_Peg",
-                            "25_Peg",
-                            "omi_And",
-                            "betPsc"
+        Cesar = "Cesar/DatosBeStarsL_lrrimulo/"
+        Cesar_correspond =  [
+                            "Cas10.dat",
+                            "OmiCas.dat",
+                            "gCas.dat",
+                            None,
+                            "V777.dat",
+                            "BkCam.dat",
+                            None,
+                            "Tau23.dat",
+                            "Tau25.dat",
+                            "28Tau.dat",
+                            None,
+                            "Cyg28.dat",
+                            "V2113.dat",
+                            "V2119.dat",
+                            "V2120.dat",
+                            "V2123.dat",
+                            "V568.dat",
+                            "60Cyg.dat",
+                            "UpsCyg.dat",
+                            "V2162.dat",
+                            None,
+                            "Peg25.dat",
+                            "oAnd.dat",
+                            "betPsc.dat"
                             ]
-                            
+                        
+        return Cesar, Cesar_correspond
+       
+       
+       
+                        
+    ### If to return ...
     if to_return == "Cesar_BR":
+        Cesar_BR = "Cesar/"
+        Cesar_BR_file = "FluxRatio_Be_Stars.txt"
+        Cesar_BR_correspond =   [
+                                "10_Cas",
+                                "omi_Cas",   
+                                "gamma_Cas",
+                                "phi_And",
+                                "V777_Cas",
+                                "Bk_Cam",
+                                "17_Tau",
+                                "23_Tau",
+                                "25_Tau",
+                                "28_Tau",
+                                "12_Vul",
+                                "28_Cyg",
+                                "V2113_Cyg",
+                                "V2119_Cyg",
+                                "V2120_Cyg",
+                                "V2123_Cyg",
+                                "V568_Cyg",
+                                "60_Cyg",
+                                "ups_Cyg",
+                                "V2162_Cyg",
+                                "16_Peg",
+                                "25_Peg",
+                                "omi_And",
+                                "betPsc"
+                                ]
+                            
         return Cesar_BR, Cesar_BR_file, Cesar_BR_correspond
         
-    ### 
-                            
-    distDR2_file = "distGDR2.dat"
-    distHIP_file = "distHIP.dat"
-    dist_correspond =   [
-                        "10Cas",
-                        "omiCas",                        
-                        "gammaCas",                        
-                        "phiAnd",                     
-                        "V777Cas",                         
-                        "BkCam",                        
-                        "17Tau",                        
-                        "23Tau",                        
-                        "25Tau",                        
-                        "28Tau",                        
-                        "12Vul",                        
-                        "28Cyg",                        
-                        "V2113Cyg",                        
-                        "V2119Cyg",                        
-                        "V2120Cyg",                        
-                        "V2123Cyg",                        
-                        "V568Cyg",                         
-                        "60Cyg",                        
-                        "upsCyg",                        
-                        "V2162Cyg",                        
-                        "16Peg",                        
-                        "25Peg",                        
-                        "omiAnd",                       
-                        "betPsc"                        
-                        ]
-
+        
+        
+        
+        
+    ### If to return ...
     if to_return == "dist":
+        distDR2_file = "distGDR2.dat"
+        distHIP_file = "distHIP.dat"
+        dist_correspond =   [
+                            "10Cas",
+                            "omiCas",                        
+                            "gammaCas",                        
+                            "phiAnd",                     
+                            "V777Cas",                         
+                            "BkCam",                        
+                            "17Tau",                        
+                            "23Tau",                        
+                            "25Tau",                        
+                            "28Tau",                        
+                            "12Vul",                        
+                            "28Cyg",                        
+                            "V2113Cyg",                        
+                            "V2119Cyg",                        
+                            "V2120Cyg",                        
+                            "V2123Cyg",                        
+                            "V568Cyg",                         
+                            "60Cyg",                        
+                            "upsCyg",                        
+                            "V2162Cyg",                        
+                            "16Peg",                        
+                            "25Peg",                        
+                            "omiAnd",                       
+                            "betPsc"                        
+                            ]
+
         return distDR2_file, distHIP_file, dist_correspond
         
-    ### 
-
-    WISE_file = "AllWISE.dat"
-    WISE_correspond =   [
-                        "10Cas",
-                        "omiCas",                        
-                        "gammaCas",                        
-                        "phiAnd",                     
-                        "V777Cas",                         
-                        "BkCam",                        
-                        "17Tau",                        
-                        "23Tau",                        
-                        "25Tau",                        
-                        "28Tau",                        
-                        "12Vul",                        
-                        "28Cyg",                        
-                        "V2113Cyg",                        
-                        "V2119Cyg",                        
-                        "V2120Cyg",                        
-                        "V2123Cyg",                        
-                        "V568Cyg",                         
-                        "60Cyg",                        
-                        "upsCyg",                        
-                        "V2162Cyg",                        
-                        "16Peg",                        
-                        "25Peg",                        
-                        "omiAnd",                       
-                        "betPsc"                        
-                        ]
-
+        
+        
+        
+        
+        
+    ### If to return ...
     if to_return == "WISE":
+        WISE_file = "AllWISE.dat"
+        WISE_correspond =   [
+                            "10Cas",
+                            "omiCas",                        
+                            "gammaCas",                        
+                            "phiAnd",                     
+                            "V777Cas",                         
+                            "BkCam",                        
+                            "17Tau",                        
+                            "23Tau",                        
+                            "25Tau",                        
+                            "28Tau",                        
+                            "12Vul",                        
+                            "28Cyg",                        
+                            "V2113Cyg",                        
+                            "V2119Cyg",                        
+                            "V2120Cyg",                        
+                            "V2123Cyg",                        
+                            "V568Cyg",                         
+                            "60Cyg",                        
+                            "upsCyg",                        
+                            "V2162Cyg",                        
+                            "16Peg",                        
+                            "25Peg",                        
+                            "omiAnd",                       
+                            "betPsc"                        
+                            ]
+
         return WISE_file, WISE_correspond
 
 
@@ -286,11 +300,14 @@ def returnDATA_LBAND():
     
     """
 
+    ### 
     data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = List_Stars("stars")
     DATA_LBAND = []
+    ### Loop over all stars
     for i in range(0,len(HDnames)):
         DATA_LBAND.append(  [
-                HDnames[i],Starnames[i],\
+                HDnames[i],     ### [0] HD name
+                Starnames[i],   ### [1] star's popular name
                 [], ### [2] dist, err_dist, source
                 YYYYMMDD_LBAND[i],
                 [
@@ -584,8 +601,8 @@ def returnDATA_LBAND():
 
     ### defining the vector of alphas
     alphamin = -6.
-    alphamax = 1.
-    N_pts = 70
+    alphamax = 2.
+    N_pts = 80
     alphavec = np.array([alphamin+(alphamax-alphamin)*float(i)/float(N_pts)\
         for i in range(0,N_pts+1)])
     
@@ -793,7 +810,7 @@ def LBAND_lines_extract(DATA_LBAND):
                 #    goodness_key = 1
                 if (DATA_LBAND[ifile][4][0][2*itrans] == ii and \
                         DATA_LBAND[ifile][4][0][2*itrans+1] == 6)\
-                        and (DATA_LBAND[ifile][4][2][itrans] >= max_goodness)\
+                        and DATA_LBAND[ifile][4][2][itrans] >= max_goodness\
                         and goodness_key == 0:
                     fluxhumphreys[ifile,ii,0] = \
                             DATA_LBAND[ifile][4][5][2*itrans]
@@ -825,7 +842,7 @@ def LBAND_lines_extract(DATA_LBAND):
             #    goodness_key = 1
             if (DATA_LBAND[ifile][4][0][2*itrans] == 5 and \
                     DATA_LBAND[ifile][4][0][2*itrans+1] == 4)\
-                    and (DATA_LBAND[ifile][4][2][itrans] >= max_goodness)\
+                    and DATA_LBAND[ifile][4][2][itrans] >= max_goodness\
                     and goodness_key == 0:
                 fluxBra[ifile,0] = \
                         DATA_LBAND[ifile][4][5][2*itrans]
@@ -855,7 +872,7 @@ def LBAND_lines_extract(DATA_LBAND):
             #    goodness_key = 1
             if (DATA_LBAND[ifile][4][0][2*itrans] == 8 and \
                     DATA_LBAND[ifile][4][0][2*itrans+1] == 5)\
-                    and (DATA_LBAND[ifile][4][2][itrans] >= max_goodness)\
+                    and DATA_LBAND[ifile][4][2][itrans] >= max_goodness\
                     and goodness_key == 0:
                 fluxPfg[ifile,0] = \
                         DATA_LBAND[ifile][4][5][2*itrans]

@@ -336,7 +336,7 @@ LINE_HUMPHREY25_lbd = spt.hydrogenlinewl(25, 6)*1e6
 ### observables of our stars. Check the program 'read_data.py' to know the 
 ### contents of DATA_LBAND.
 DATA_LBAND = read_data.returnDATA_LBAND()
-
+### 
 fluxhumphreys, EWhumphreys, GFWHMhumphreys, \
 fluxBra, EWBra, GFWHMBra, \
 fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
@@ -1742,6 +1742,114 @@ if 1==2:
 ### Now, comes the part 2 of the analysis: MCMC fitting for comparison 
 ### of models and observations.
 
+folder_filledNaNs = "./extrap01/"
+
+
+tp="linear"
+allow_extrapolation="yes"
+prints="yes"
+
+#WISE = attribution_procedure5(WISE_filters_read,4)
+#ALPHA_WISE = attribution_procedure5(ALPHA_WISE_read,3)
+
+### The domain of the grids:
+npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
+npar_vals = np.array([float(x) for x in npar])
+sigpar_vals = np.array([float(x) for x in sigpar])
+Mpar_vals = np.array([float(x) for x in Mpar])
+obpar_vals = np.array([float(x) for x in obpar])
+cosipar_vals = np.array([float(x) for x in cosipar])
+
+### 
+def fillingNaNs(folder_filledNaNs,nameval,axis,vals,tp,\
+            allow_extrapolation,prints,overwrite = False):
+
+
+    ### 
+    list_filledNaNs = glob.glob(folder_filledNaNs+"*")
+    ### 
+    found_fileNaN = True in [folder_filledNaNs+nameval == \
+                        x.replace(".dat","") for x in list_filledNaNs]
+    
+    if not found_fileNaN or overwrite:
+        if prints != "no":
+            print("FILLING THE NANS PROCEDURE (This may take some time!)")
+        ### 
+        vals = lrr.fill_NaNs_interp(axis,\
+                vals,\
+                tp,allow_extrapolation,prints)
+        ### 
+        f0 = open(folder_filledNaNs+nameval + ".dat","w")
+        for elem in vals:
+            f0.write(str(elem)+"\n")        
+        f0.close()        
+    else:
+        ### 
+        f0 = open(folder_filledNaNs+nameval + ".dat","r")
+        f0linhas = f0.readlines()
+        f0.close()
+        ### 
+        vals = []
+        for iline in range(0,len(f0linhas)):
+            vals.append(float(f0linhas[iline]))
+
+    return vals
+
+
+
+
+
+
+
+
+
+
+
+
+### 
+axis = [npar_vals,sigpar_vals,Mpar_vals,obpar_vals,cosipar_vals]
+
+### 
+vals_alphaW1W2 = []; vals_alphaW1W2_name = "vals_alphaW1W2"
+vals_alphaW2W3 = []; vals_alphaW2W3_name = "vals_alphaW2W3"
+vals_alphaW3W4 = []; vals_alphaW3W4_name = "vals_alphaW3W4"
+i4 = obpar.index("1.40")
+for i1 in range(0,len(npar_vals)):
+    for i2 in range(0,len(sigpar_vals)):
+        for i3 in range(0,len(Mpar_vals)):
+            for i4_notused in range(0,len(obpar_vals)):
+                for i5 in range(0,len(cosipar_vals)):
+                    vals_alphaW1W2.append(ALPHA_WISE[i1,i2,i3,i4,i5,0])
+                    vals_alphaW2W3.append(ALPHA_WISE[i1,i2,i3,i4,i5,1])
+                    vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
+                    #print([i1,i2,i3,i4,i5],vals_alphaW1W2[-1])
+
+
+
+vals_alphaW1W2 = fillingNaNs(folder_filledNaNs,\
+                    vals_alphaW1W2_name,axis,\
+                    vals_alphaW1W2,\
+                    tp,allow_extrapolation,prints,overwrite = False)
+
+vals_alphaW2W3 = fillingNaNs(folder_filledNaNs,\
+                    vals_alphaW2W3_name,axis,\
+                    vals_alphaW2W3,\
+                    tp,allow_extrapolation,prints,overwrite = False)
+
+vals_alphaW1W2 = fillingNaNs(folder_filledNaNs,\
+                    vals_alphaW3W4_name,axis,\
+                    vals_alphaW3W4,\
+                    tp,allow_extrapolation,prints,overwrite = False)
+
+
+
+
+
+
+
+
+
+
 
 def fBe(M,A):
     
@@ -1768,6 +1876,49 @@ def fBe(M,A):
     A6*log10ell**6.
     
     return A*np.exp(logf)
+
+
+
+def thetabig(n,Sig,M,W,cosi):
+    
+    if 4.2 <= M <= 20. and \
+            0. <= W <= 1. and \
+            0. <= Sig <= 4. and \
+            2. <= n <= 4.5 and \
+            0. <= cosi <= 1.:
+        return 1.
+    else:
+        return 0.
+    
+    
+    
+def lnprior(theta,other):
+    
+    n = theta[0]
+    Sig = theta[1]
+    M = theta[2]
+    W = theta[3]
+    cosi = theta[4]
+    
+    mean_W = other[0]
+    std_W = other[1]
+    
+    thetab = thetabig(n,Sig,M,W,cosi)
+    
+    if thetab == 0.:
+        return -np.inf
+    else:
+        fbe = fBe(M,1.)
+        return -2.3*np.log(M) + np.log(fbe) \
+                    - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
+    
+    
+    
+    
+    
+
+
+
 
 
 def find_area():

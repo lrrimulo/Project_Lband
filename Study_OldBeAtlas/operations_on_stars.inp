@@ -1,0 +1,32 @@
+### This file contains a list of procedures to be applied to 
+### each individual Be star with measured data.
+
+
+STAR 1424
+BINF_FOLDER ./bayesian_inference_01/
+BINF_ALPHAL_BL YES suffix01
+BINF_ALPHAW3W4_W3 YES suffix01
+BINF_LENORZER NO suffix01
+END_STAR
+
+STAR 144
+BINF_FOLDER ./bayesian_inference_01/
+BINF_ALPHAL_BL YES suffix01
+BINF_ALPHAW3W4_W3 YES suffix01
+BINF_LENORZER NO suffix01
+END_STAR
+
+
+STAR 1424
+BINF_FOLDER ./bayesian_inference_01/
+BINF_ALPHAL_BL YES suffix01
+BINF_ALPHAW3W4_W3 YES suffix01
+BINF_LENORZER NO suffix01
+END_STAR
+
+
+
+
+
+
+
