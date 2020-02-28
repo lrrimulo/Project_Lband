@@ -2126,9 +2126,14 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
     ### Writing results of the bayesian inference an external file,
     ### for future analysis
     writeline = []
+    ### Printing the mean acceptance fraction
+    ### (This number should be between 0.25 and 0.5)
+    writeline.append("MAF "+str(np.mean(sampler.acceptance_fraction))+"\n")
+    ### Printing the walkers's position for every element of the chain:
     for ichain in range(0,len(sampler.chain[0])):
         for iwalker in range(0,len(sampler.chain)):
-            writeline.append(str(sampler.lnprobability[iwalker][ichain])+" "+\
+            writeline.append(\
+                    str(sampler.lnprobability[iwalker][ichain])+" "+\
                     str(sampler.chain[iwalker][ichain][0])+" "+\
                     str(sampler.chain[iwalker][ichain][1])+" "+\
                     str(sampler.chain[iwalker][ichain][2])+" "+\
