@@ -12,7 +12,7 @@ import emcee
 
 
 folder_data = "./DatosBeStarsL/"
-output_folder = "./DatosBeStarsL_lrrimulo_deletar/"
+output_folder = "./DatosBeStarsL_lrrimulo/"
 
 ##############################
 ### Collecting the correct locations of the hydrogen lines in the L-band.
@@ -154,7 +154,7 @@ def polynom_lambda(lamb_app,lamb0,beta,a1,a2,a3,a4,a5,a6):
 
 ndim = 8             ### Number of dimensions of the distribution. 
 nwalkers = 10*ndim   ### We'll sample with >=2*ndim walkers.
-Nchain = 2        ### Number of elements of the chains.
+Nchain = 2000        ### Number of elements of the chains.
 
 
 limits = [  [40000.,41000.],    ### lambda0 [Angstroms]
@@ -452,7 +452,7 @@ for ifile in range(0,len(lines_print)):
 
 
 ###
-if 1==2:
+if 1==1:
     for i in range(0,len(lambs)):
         plt.plot([lambs[i]*1e4,lambs[i]*1e4],[-1.,len(file_list)],\
                 color="black",linewidth=0.3)

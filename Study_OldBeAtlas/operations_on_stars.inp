@@ -3,26 +3,180 @@
 
 
 STAR 1424
-BINF_FOLDER ./bayesian_inference_01/
-BINF_ALPHAL_BL YES suffix01
-BINF_ALPHAW3W4_W3 YES suffix01
-BINF_LENORZER NO suffix01
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
 END_STAR
 
 STAR 144
-BINF_FOLDER ./bayesian_inference_01/
-BINF_ALPHAL_BL YES suffix01
-BINF_ALPHAW3W4_W3 YES suffix01
-BINF_LENORZER NO suffix01
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 YES 10 70 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 4180
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 5394
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 6811
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 11606
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 20336
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
 END_STAR
 
 
-STAR 1424
-BINF_FOLDER ./bayesian_inference_01/
-BINF_ALPHAL_BL YES suffix01
-BINF_ALPHAW3W4_W3 YES suffix01
-BINF_LENORZER NO suffix01
+STAR 23302
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
 END_STAR
+
+
+STAR 23480
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 23630
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 23862
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 187811
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+
+STAR 191610
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 193009
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+
+STAR 194335
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 194883
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+
+STAR 195907
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 197419
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+
+STAR 200310
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+
+STAR 202904
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 204722
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 208057
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 210129
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 217675
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+STAR 217891
+BINF_ALPHAL_BL NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 NO 10 700 ./bayesian_inference_01/ suffix01
+BINF_LENORZER NO 10 700 ./bayesian_inference_01/ suffix01
+END_STAR
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

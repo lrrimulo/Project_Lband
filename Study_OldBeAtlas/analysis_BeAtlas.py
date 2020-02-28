@@ -8,6 +8,7 @@ import pyhdust.spectools as spt
 import pyhdust.lrr as lrr
 import matplotlib.pyplot as plt
 import emcee
+import corner
 import glob as glob
 import read_data as read_data
 import read_everything as read_everything
@@ -305,7 +306,59 @@ TEMP_T = attribution_procedure4(TEMP_T_read,Nelems)
 
 
 
-#import sys; sys.exit()
+### 
+def fillingNaNs(folder_filledNaNs,nameval,axis,vals,tp,\
+            allow_extrapolation,prints,overwrite = False):
+    """
+    This function applies the "powerful interpolation" in order to fill
+    some or all of the NaNs in the 'vals' vector, but only if there isn't
+    an already saved correspondent file in folder 'folder_filledNaNs'.
+    
+    The output of this function is a new 'vals' vector, with some of its 
+    NaNs filled by the "powerful interpolation".
+    """
+
+    ### 
+    list_filledNaNs = glob.glob(folder_filledNaNs + "*")
+    
+    ### 'found_fileNaN' will be True if there is a file with the same name
+    ### as 'nameval' in the folder 'folder_filledNaNs'. If this isn't the case
+    ### or if 'overwrite' is True, the filling the NaNs procedure will be 
+    ### activated and, after that, the file with the calculated 'vals' will be 
+    ### created. If, however, this is the case (else), the 'vals' will 
+    ### be read from the external file.
+    found_fileNaN = True in [folder_filledNaNs + nameval == \
+                        x.replace(".dat","") for x in list_filledNaNs]
+    if not found_fileNaN or overwrite:
+        if prints != "no":
+            print("FILLING THE NANS PROCEDURE (This may take some time!)")
+        ### 
+        vals = lrr.fill_NaNs_interp(axis,\
+                vals,\
+                tp,allow_extrapolation,prints)
+        ### 
+        f0 = open(folder_filledNaNs + nameval + ".dat","w")
+        for elem in vals:
+            f0.write(str(elem)+"\n")        
+        f0.close()        
+    ### 
+    else:
+        ### 
+        f0 = open(folder_filledNaNs + nameval + ".dat","r")
+        f0linhas = f0.readlines()
+        f0.close()
+        ### 
+        vals = []
+        for iline in range(0,len(f0linhas)):
+            vals.append(float(f0linhas[iline]))
+
+    return vals
+
+
+
+
+
+
 
 
 #############################
@@ -344,9 +397,9 @@ fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
 
 ### If you want to make the tables of data for the paper, turn this on:
 if 1==2:
-    lixo = read_data.make_table_obs1(DATA_LBAND,"./tables/table_obs1.txt")
-    lixo = read_data.make_table_obs2(DATA_LBAND,"./tables/table_obs2.txt")
-    lixo = read_data.make_bigtables_obs(DATA_LBAND,"./tables/bigtables_obs.txt")
+    lixo = read_data.make_table_obs1(DATA_LBAND,"./tables/table_obs1.out")
+    lixo = read_data.make_table_obs2(DATA_LBAND,"./tables/table_obs2.out")
+    lixo = read_data.make_bigtables_obs(DATA_LBAND,"./tables/bigtables_obs.out")
 
 
 
@@ -355,6 +408,105 @@ if 1==2:
 ##########################################################
 ### TODO Fredy's task: Generate prior distribution and save in external file.
 ### I will use it to plot qs in the observed diagrams.
+
+### 
+def newlog10abs(x,B):
+    """
+    This function is defined for all x real.
+    It is a good approximation to log10(|x|), if |B*x| >> 1.
+    
+    Obs: This function explores the fact that 
+    arcsinh(B*x) ~ sign(B*x)*A*ln[2*|B*x|], when |B*x| >> 1.
+    """
+    ### A*np.arcsinh(B*x)-np.sign(B*x)*A*np.log(2.*abs(B*x)) = 0
+    ### A*np.arcsinh(B*x)-np.sign(B*x)*A*(np.log(2.*abs(B))+np.log(abs(x))) = 0
+    ### np.sign(B*x)*np.arcsinh(B*x)-np.log(2.*abs(B))=np.log(abs(x))
+    return np.arcsinh(abs(B*x))/np.log(10.)-np.log10(2.*abs(B))
+
+
+
+
+
+### Se define la funcion necesaria para la Theta Big
+def fBe(M,A):
+   
+    ell = 1.4*M**3.5
+    log10ell = np.log10(1.4)+3.5*np.log10(M)
+   
+   
+   
+    A0 = -14.09101
+    A1 = 8.71656
+    A2 = -1.95159
+    A3 = 0.11596
+    A4 = 0.
+    A5 = 0.
+    A6 = 0.
+   
+    logf = A0+\
+            A1*log10ell+\
+            A2*log10ell**2.+\
+            A3*log10ell**3.+\
+            A4*log10ell**4.+\
+            A5*log10ell**5.+\
+            A6*log10ell**6.
+   
+    return A*np.exp(logf)
+
+
+### En esta parte se define la ThetaBig, poniendo los intervalos para cada parametro
+def thetabig(n,logSig,M,W,cosi):
+   
+    if 4.2 <= M <= 20. and \
+            0. <= W <= 1. and \
+            -np.inf <= logSig <= 0.6020599913279624 and \
+            2. <= n <= 4.5 and \
+            0. <= cosi <= 1.:
+        return 1.
+    else:
+        return 0.
+
+
+
+
+### Se define la funcion Prior
+def lnprior(theta,other):
+   
+
+
+    ### Se definen los parametros de la Prior
+    n = theta[0]
+    logSig = theta[1]
+    M = theta[2]
+    W = np.sqrt(2.*(theta[3]-1.))
+    cosi = theta[4]
+   
+
+
+
+    mean_W = other[0]
+    std_W = other[1]
+   
+    thetab = thetabig(n,logSig,M,W,cosi)
+   
+    if thetab == 0.:
+        return -np.inf
+    else:
+        fbe = fBe(M,1.)
+        return -2.3*np.log(M) + np.log(fbe) \
+                    - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1303,9 +1455,6 @@ if 1==2:
 
 
 
-
-
-
 #############################
 ### Plotting magnitude diagrams for the work with Alejandro and K. Vieira
 if 1==2:
@@ -1740,60 +1889,304 @@ if 1==2:
 ##########################################################
 ##########################################################
 ### Now, comes the part 2 of the analysis: MCMC fitting for comparison 
-### of models and observations.
+### of models and observations (bayesian inference).
 
-folder_filledNaNs = "./extrap01/"
-
-
-tp="linear"
-allow_extrapolation="yes"
-prints="yes"
-
-#WISE = attribution_procedure5(WISE_filters_read,4)
-#ALPHA_WISE = attribution_procedure5(ALPHA_WISE_read,3)
-
-### The domain of the grids:
-npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
-npar_vals = np.array([float(x) for x in npar])
-sigpar_vals = np.array([float(x) for x in sigpar])
-Mpar_vals = np.array([float(x) for x in Mpar])
-obpar_vals = np.array([float(x) for x in obpar])
-cosipar_vals = np.array([float(x) for x in cosipar])
-
-### 
-def fillingNaNs(folder_filledNaNs,nameval,axis,vals,tp,\
-            allow_extrapolation,prints,overwrite = False):
+### File containing the operations to be performed on the Be stars
+operations_on_stars = "operations_on_stars.inp"
 
 
-    ### 
-    list_filledNaNs = glob.glob(folder_filledNaNs+"*")
-    ### 
-    found_fileNaN = True in [folder_filledNaNs+nameval == \
-                        x.replace(".dat","") for x in list_filledNaNs]
-    
-    if not found_fileNaN or overwrite:
-        if prints != "no":
-            print("FILLING THE NANS PROCEDURE (This may take some time!)")
-        ### 
-        vals = lrr.fill_NaNs_interp(axis,\
-                vals,\
-                tp,allow_extrapolation,prints)
-        ### 
-        f0 = open(folder_filledNaNs+nameval + ".dat","w")
-        for elem in vals:
-            f0.write(str(elem)+"\n")        
-        f0.close()        
+
+
+
+######################
+
+def inside_binflims(theta,binflims):
+    """
+    This function returns True if theta is inside the limits 
+    defined by 'binflims' and False otherwise.
+    """
+    if binflims[0][0] <= theta[0] <= binflims[0][1] and \
+            binflims[1][0] <= theta[1] <= binflims[1][1] and \
+            binflims[2][0] <= theta[2] <= binflims[2][1] and \
+            binflims[3][0] <= theta[3] <= binflims[3][1] and \
+            binflims[4][0] <= theta[4] <= binflims[4][1]:
+        return True
     else:
+        return False
+
+
+def get_instructions(operations_on_stars):
+    """
+    This function reads the instructions of operations to be applied
+    on the Be stars from our database.
+    """
+
+    ### Reading the contents of the file containing all instructions
+    f0 = open(operations_on_stars,"r")
+    lines = f0.readlines()
+    f0.close()
+
+    ### 'instructions' is a list that will contain all the instructions
+    ### to be performed on all stars that are in the instructions file and 
+    ### in our database.
+    instructions = []
+    ### Getting 'HDnames'
+    data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = \
+                    read_data.List_Stars("stars")
+    ### Loop over every line of the instructions file
+    starkey = 0
+    for iline in range(0,len(lines)):
+        thisline = lines[iline].split()
+        if len(thisline) > 0:
+            ### Entering the "STAR" subfolder
+            if thisline[0] == "STAR" and len(thisline) == 2:
+                hdname = thisline[1]
+                if hdname in HDnames:
+                    instructions.append([hdname,[]])
+                    starkey = 1
+                else:
+                    print("There is no Be star called HD "+hdname+\
+                            " in the database.")
+            
+            ### For this specific star, reads instructions for bayesian 
+            ### inference
+            if (thisline[0] == "BINF_ALPHAW3W4_W3" or \
+                thisline[0] == "BINF_ALPHAL_BL" or \
+                thisline[0] == "BINF_LENORZER" )\
+                        and len(thisline) == 6 and starkey == 1:
+                if thisline[1] == "YES":
+                    instructions[-1][1].append([    thisline[0],
+                                                    thisline[2],
+                                                    thisline[3],
+                                                    thisline[4],
+                                                    thisline[5]
+                                                ])
+                                            
+            ### Leaves the "STAR" subfolder
+            if thisline[0] == "END_STAR" and starkey == 1:
+                starkey = 0
+        
+    return instructions
+
+
+
+def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
+        nwalkers, Nchain, folder_output, suffix,\
+        binflims):
+    """
+    This function does bayesian inference using the observables
+    alphaW3w4 and MW3 only. 
+    It does it for a specific star in our database.
+    It prints the results of emcee in an external file.
+    """
+
+    ### importing sys, for the printing of progress bar
+    import sys
+
+    ### Hyperrectangular limits for the bayesian inference.
+    binflims = [
+        [3.0,4.5],
+        [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
+        [4.2,14.6],
+        [1.2,1.4],
+        [0.26,1.00]
+        ]
+    
+    ### Type of interpolation and "allowing extrapolation" for the 
+    ### bayesian inference.
+    tp = "linear"
+    allow_extrapolation = "no"
+    
+    ###################
+    ### Posterior for measuring alphaW3W4 and MW3:
+    def lnposterior(theta, x, sigmax, interpars, binflims, other, Nchain):
+        
+        ### Printing the progress bar on the screen
+        sys.stdout.write("\rSAMPLING: {:2.3%}".\
+                    format(float(sampler.iteration+1)/float(Nchain))+"     ")
+        sys.stdout.flush()
+        
+        ### Imposing the walkers to be inside the hyperrectangle 
+        ### defined by 'binflims':
+        is_inside = inside_binflims(theta, binflims)
+        if not is_inside:
+            return -np.inf
+            
+        ### Calculating the prior
+        lnpr=lnprior(theta, other)
+        ### If the prior isn't zero, calculate the likelihood also.
+        if np.isinf(-lnpr):
+            return lnpr
+        else:
+            return lnpr+lnlikelihood(theta, x, sigmax, interpars)
+
+
+    ### Likelihood function for alphaW3W4 and MW3
+    def lnlikelihood(theta, x, sigmax, interpars):
+        
         ### 
-        f0 = open(folder_filledNaNs+nameval + ".dat","r")
-        f0linhas = f0.readlines()
-        f0.close()
-        ### 
-        vals = []
-        for iline in range(0,len(f0linhas)):
-            vals.append(float(f0linhas[iline]))
+        values1 = interpars[0]
+        values2 = interpars[1]
+        axis = interpars[2]
+        tp = interpars[3]
+        allow_extrapolation = interpars[4]
+        ### alphaW3W4
+        xmod0 = lrr.interpLinND(theta,axis,values1,tp,allow_extrapolation)
+        ### MW3
+        xmod1 = lrr.interpLinND(theta,axis,values2,tp,allow_extrapolation)
+    
+        return -0.5*(
+                    ((xmod0-x[0])/sigmax[0])*((xmod0-x[0])/sigmax[0])+\
+                    ((xmod1-x[1])/sigmax[1])*((xmod1-x[1])/sigmax[1])\
+                    )
+    ###################
+    
+    
+    
 
-    return vals
+    ### The domain of the grids:
+    npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
+    ### Converting strings to float
+    npar_vals = np.array([float(x) for x in npar])
+    logsigpar_vals = np.array([newlog10abs(float(x),1e5) for x in sigpar])
+    Mpar_vals = np.array([float(x) for x in Mpar])
+    obpar_vals = np.array([float(x) for x in obpar])
+    cosipar_vals = np.array([float(x) for x in cosipar])
+
+    ### Defining the domain of the grid
+    axis = [npar_vals,logsigpar_vals,Mpar_vals,obpar_vals,cosipar_vals]
+    ndim = len(axis)
+
+    ### Attributing values for every element of the grid
+    vals_alphaW3W4 = []
+    vals_MW3 = []
+    i4 = obpar.index("1.40")
+    for i1 in range(0,len(npar_vals)):
+        for i2 in range(0,len(logsigpar_vals)):
+            for i3 in range(0,len(Mpar_vals)):
+                for i4_notused in range(0,len(obpar_vals)):
+                    for i5 in range(0,len(cosipar_vals)):
+                        vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
+                        vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
+    
+    ### Turn this on to fill the NaNs in the values (probably due to 
+    ### the fact that the grid was not entirely computed).
+    if 1==1:
+        ### folder for printing the results
+        folder_filledNaNs = "./extrap01/"
+        ### Below, "yes" means printing the progress of the 
+        ### filling NaNs procedure
+        prints = "yes"
+        ### Allowing extrapolation for the filling the NaNs procedure
+        allow_extrapolation_fill = "yes"
+        ### filling the NaNs of alphaW3W4
+        vals_alphaW3W4_name = "vals_alphaW3W4"
+        vals_alphaW3W4 = fillingNaNs(folder_filledNaNs,\
+                        vals_alphaW3W4_name,axis,\
+                        vals_alphaW3W4,\
+                        tp,allow_extrapolation_fill,prints,overwrite = False)
+        ### filling the NaNs of MW3
+        vals_MW3_name = "vals_MW3"
+        vals_MW3 = fillingNaNs(folder_filledNaNs,\
+                        vals_MW3_name,axis,\
+                        vals_MW3,\
+                        tp,allow_extrapolation_fill,prints,overwrite = False)
+    
+    ### Data on this specific star (to go to bayesian inference)
+    obs_alpha34 = DATA_LBAND_now[6][4][0]
+    sig_alpha34 = DATA_LBAND_now[6][4][1]
+    obs_MW3 = DATA_LBAND_now[6][5][4]
+    sig_MW3 = DATA_LBAND_now[6][5][5]
+    x = [obs_alpha34,obs_MW3]
+    sigmax = [sig_alpha34,sig_MW3]
+    ###
+    interpars = [vals_alphaW3W4, vals_MW3, axis, tp, allow_extrapolation]
+    other = [0.81, 0.12]
+    
+    ### Choose an initial set of positions for the walkers.
+    ### (It is a list of ndim-dimensional lists.)
+    p0 = [  [
+            np.random.uniform(binflims[0][0],binflims[0][1]),
+            np.random.uniform(binflims[1][0],binflims[1][1]),
+            np.random.uniform(binflims[2][0],binflims[2][1]),
+            np.random.uniform(binflims[3][0],binflims[3][1]),
+            np.random.uniform(binflims[4][0],binflims[4][1])
+            ] for i in range(nwalkers)
+        ]
+    
+    
+    ### Initializing the sampler with the chosen specs.
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnposterior,\
+            args=[x, sigmax, interpars, binflims, other, Nchain])
+    ### Sampling...
+    print("SAMPLING for observables alphaW3W4 and MW3...")
+    pos, prob, state = sampler.run_mcmc(p0, Nchain)
+    print("\rSAMPLING: DONE         ")
+    
+    ### Writing results of the bayesian inference an external file,
+    ### for future analysis
+    writeline = []
+    for ichain in range(0,len(sampler.chain[0])):
+        for iwalker in range(0,len(sampler.chain)):
+            writeline.append(str(sampler.lnprobability[iwalker][ichain])+" "+\
+                    str(sampler.chain[iwalker][ichain][0])+" "+\
+                    str(sampler.chain[iwalker][ichain][1])+" "+\
+                    str(sampler.chain[iwalker][ichain][2])+" "+\
+                    str(sampler.chain[iwalker][ichain][3])+" "+\
+                    str(sampler.chain[iwalker][ichain][4])+"\n"\
+                    )
+    f1 = open(folder_output+\
+        "BINF_ALPHAW3W4_W3__"+DATA_LBAND_now[0]+"__"+suffix+".out","w")
+    for iwrite in range(0,len(writeline)):
+        f1.write(writeline[iwrite])
+    f1.close()
+    
+    ### Turn this on to see the evolution of the probabilities 
+    if 1==1:
+        lnprobability = sampler.lnprobability
+
+        poslnprob=np.arange(1,len(lnprobability[0])+1)
+        fig=plt.figure(figsize=(6,6))
+        ax=plt.subplot(1,1,1)
+        
+        for iwalker in range(0,len(lnprobability)):
+            plt.plot(poslnprob,[np.arcsinh(lnprobability[iwalker][ichain]) \
+                for ichain in range(0,len(lnprobability[0]))], \
+                color='black', linewidth=0.05, linestyle='-')
+        plt.ylabel("$\\arcsinh(\\ln(\\mathrm{prob}))$")
+        plt.xlabel("position in the chain")
+        fig.savefig("convergence_"+DATA_LBAND_now[0]+".png")
+    
+    ### Turn this on to make a corner plot of the results.
+    if 1==1:
+        if Nchain >= 1000:
+            nburnin = 300
+        if 0 <= Nchain < 1000:
+            nburnin = int(Nchain*0.3)
+        samples = sampler.chain[:, nburnin:, :].reshape((-1, ndim))
+        fig = corner.corner(samples, \
+        labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
+        "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
+        fig.savefig("teste_"+DATA_LBAND_now[0]+".png")
+    
+    return 
+
+
+def BINF_ALPHAL_BL_procedure(DATA_LBAND_now,\
+        nwalkers, Nchain, folder_output, suffix,\
+        binflims):
+    """
+    This function does bayesian inference using the observables
+    alphaL and MBL only. 
+    It does it for a specific star in our database.
+    It prints the results of emcee in an external file.
+    """
+    pass
+    ### TODO: Fredy continues here...
+    
+    return
+    
+    
 
 
 
@@ -1802,44 +2195,63 @@ def fillingNaNs(folder_filledNaNs,nameval,axis,vals,tp,\
 
 
 
+######################
+
+
+
+### Getting instructions of operations to be applied to the data on
+### Be stars.
+instructions = get_instructions(operations_on_stars)
+### Reading the data on our Be stars
+data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = \
+                read_data.List_Stars("stars")
+DATA_LBAND = read_data.returnDATA_LBAND()
+fluxhumphreys, EWhumphreys, GFWHMhumphreys, \
+            fluxBra, EWBra, GFWHMBra, \
+            fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
+
+### Now, this is the part in which the instructions are executed.
+for iinst in range(0,len(instructions)):
+    intructs_now = [x for x in instructions[iinst]]
+    istar = HDnames.index(intructs_now[0])
+    
+    ### Loop over the instructions for this specific Be star
+    for iinow in range(0,len(intructs_now[1])):
+        ### Instructions: bayesian inference with the observables
+        ### alphaW3W4 and MW3.
+        if intructs_now[1][iinow][0] == "BINF_ALPHAW3W4_W3":
+            ### 
+            ndim = 5 
+            DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
+            nwalkers = int(intructs_now[1][iinow][1])*2*ndim
+            Nchain = int(intructs_now[1][iinow][2])
+            folder_output = intructs_now[1][iinow][3]
+            suffix = intructs_now[1][iinow][4]
+            
+            ### 
+            BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
+                    nwalkers, Nchain, folder_output, suffix,\
+                    binflims)
+        
+        ### TODO: Fredy should complete this...
+        if intructs_now[1][iinow][0] == "BINF_ALPHAL_BL":
+            ### 
+            ndim = 5
+            DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
+            nwalkers = int(intructs_now[1][iinow][1])*2*ndim
+            Nchain = int(intructs_now[1][iinow][2])
+            folder_output = intructs_now[1][iinow][3]
+            suffix = intructs_now[1][iinow][4]
+            
+            ### TODO (Fredy)
+            ### Call procedure for bayesian inference
 
 
 
 
-### 
-axis = [npar_vals,sigpar_vals,Mpar_vals,obpar_vals,cosipar_vals]
-
-### 
-vals_alphaW1W2 = []; vals_alphaW1W2_name = "vals_alphaW1W2"
-vals_alphaW2W3 = []; vals_alphaW2W3_name = "vals_alphaW2W3"
-vals_alphaW3W4 = []; vals_alphaW3W4_name = "vals_alphaW3W4"
-i4 = obpar.index("1.40")
-for i1 in range(0,len(npar_vals)):
-    for i2 in range(0,len(sigpar_vals)):
-        for i3 in range(0,len(Mpar_vals)):
-            for i4_notused in range(0,len(obpar_vals)):
-                for i5 in range(0,len(cosipar_vals)):
-                    vals_alphaW1W2.append(ALPHA_WISE[i1,i2,i3,i4,i5,0])
-                    vals_alphaW2W3.append(ALPHA_WISE[i1,i2,i3,i4,i5,1])
-                    vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
-                    #print([i1,i2,i3,i4,i5],vals_alphaW1W2[-1])
 
 
 
-vals_alphaW1W2 = fillingNaNs(folder_filledNaNs,\
-                    vals_alphaW1W2_name,axis,\
-                    vals_alphaW1W2,\
-                    tp,allow_extrapolation,prints,overwrite = False)
-
-vals_alphaW2W3 = fillingNaNs(folder_filledNaNs,\
-                    vals_alphaW2W3_name,axis,\
-                    vals_alphaW2W3,\
-                    tp,allow_extrapolation,prints,overwrite = False)
-
-vals_alphaW1W2 = fillingNaNs(folder_filledNaNs,\
-                    vals_alphaW3W4_name,axis,\
-                    vals_alphaW3W4,\
-                    tp,allow_extrapolation,prints,overwrite = False)
 
 
 
