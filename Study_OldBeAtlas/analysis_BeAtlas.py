@@ -1888,8 +1888,8 @@ if 1==2:
 
 ##########################################################
 ##########################################################
-### Now, comes the part 2 of the analysis: MCMC fitting for comparison 
-### of models and observations (bayesian inference).
+### Now, comes the part 2 of the analysis: MCMC bayesian inference for comparison 
+### of models and observations.
 
 ### File containing the operations to be performed on the Be stars
 operations_on_stars = "operations_on_stars.inp"
@@ -1982,15 +1982,6 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
 
     ### importing sys, for the printing of progress bar
     import sys
-
-    ### Hyperrectangular limits for the bayesian inference.
-    binflims = [
-        [3.0,4.5],
-        [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
-        [4.2,14.6],
-        [1.2,1.4],
-        [0.26,1.00]
-        ]
     
     ### Type of interpolation and "allowing extrapolation" for the 
     ### bayesian inference.
@@ -2005,6 +1996,11 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
         sys.stdout.write("\rSAMPLING: {:2.3%}".\
                     format(float(sampler.iteration+1)/float(Nchain))+"     ")
         sys.stdout.flush()
+        
+        ### If there are NaNs in the data, the probability is zero:
+        if np.isnan(x[0]) or np.isnan(x[1]) or \
+                np.isnan(sigmax[0]) or np.isnan(sigmax[1]):
+            return -np.inf
         
         ### Imposing the walkers to be inside the hyperrectangle 
         ### defined by 'binflims':
@@ -2030,15 +2026,19 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
         axis = interpars[2]
         tp = interpars[3]
         allow_extrapolation = interpars[4]
+
         ### alphaW3W4
         xmod0 = lrr.interpLinND(theta,axis,values1,tp,allow_extrapolation)
         ### MW3
         xmod1 = lrr.interpLinND(theta,axis,values2,tp,allow_extrapolation)
     
-        return -0.5*(
-                    ((xmod0-x[0])/sigmax[0])*((xmod0-x[0])/sigmax[0])+\
-                    ((xmod1-x[1])/sigmax[1])*((xmod1-x[1])/sigmax[1])\
-                    )
+        if (not np.isnan(xmod0)) and (not np.isnan(xmod1)):
+            return -0.5*(
+                        ((xmod0-x[0])/sigmax[0])*((xmod0-x[0])/sigmax[0])+\
+                        ((xmod1-x[1])/sigmax[1])*((xmod1-x[1])/sigmax[1])\
+                        )
+        else:
+            return -np.inf
     ###################
     
     
@@ -2227,7 +2227,14 @@ for iinst in range(0,len(instructions)):
             Nchain = int(intructs_now[1][iinow][2])
             folder_output = intructs_now[1][iinow][3]
             suffix = intructs_now[1][iinow][4]
-            
+            ### Hyperrectangular limits for the bayesian inference.
+            binflims = [
+                    [3.0,4.5],
+                    [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
+                    [4.2,14.6],
+                    [1.2,1.4],
+                    [0.26,1.00]
+                    ]
             ### 
             BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
                     nwalkers, Nchain, folder_output, suffix,\
