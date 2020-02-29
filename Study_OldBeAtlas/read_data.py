@@ -286,8 +286,35 @@ def List_Stars(to_return):
 
         return WISE_file, WISE_correspond
 
-
-
+    
+    if to_return == "Vieira2017_results":
+        Vieira =    [
+                    None,   
+                    None,
+                    "5394",  
+                    "6811",  
+                    "11606", 
+                    "20336", 
+                    None, 
+                    "23480", 
+                    "23630", 
+                    None, 
+                    "187811",
+                    "191610",
+                    None,
+                    "194335",
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    None,
+                    "217891"
+                    ]
+        
 
 
 
@@ -804,7 +831,7 @@ def LBAND_lines_extract(DATA_LBAND):
 
     for ifile in range(0,len(DATA_LBAND)):
         goodness_key = 0
-        for itrans in range(0,len(DATA_LBAND[ifile][4][0])/2):
+        for itrans in range(0,int(len(DATA_LBAND[ifile][4][0])/2)):
             for ii in range(0,Nmax+1):
                 #if DATA_LBAND[ifile][4][2][itrans] < max_goodness:
                 #    goodness_key = 1
@@ -837,7 +864,7 @@ def LBAND_lines_extract(DATA_LBAND):
 
     for ifile in range(0,len(DATA_LBAND)):
         goodness_key = 0
-        for itrans in range(0,len(DATA_LBAND[ifile][4][0])/2):
+        for itrans in range(0,int(len(DATA_LBAND[ifile][4][0])/2)):
             #if DATA_LBAND[ifile][4][2][itrans] < max_goodness:
             #    goodness_key = 1
             if (DATA_LBAND[ifile][4][0][2*itrans] == 5 and \
@@ -867,7 +894,7 @@ def LBAND_lines_extract(DATA_LBAND):
 
     for ifile in range(0,len(DATA_LBAND)):
         goodness_key = 0
-        for itrans in range(0,len(DATA_LBAND[ifile][4][0])/2):
+        for itrans in range(0,int(len(DATA_LBAND[ifile][4][0])/2)):
             #if DATA_LBAND[ifile][4][2][itrans] < max_goodness:
             #    goodness_key = 1
             if (DATA_LBAND[ifile][4][0][2*itrans] == 8 and \

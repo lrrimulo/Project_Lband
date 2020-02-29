@@ -454,6 +454,54 @@ def fBe(M,A):
     return A*np.exp(logf)
 
 
+
+def find_area():
+
+    Ar = 1.
+    x = np.array([1.+0.01*float(i) for i in range(0,3500+1)])
+    y = np.array([fBe(elem,Ar) for elem in x])
+
+    ymin = 0.
+    ymax = np.nanmax(y)
+    xmin = np.nanmin(x)
+    xmax = np.nanmax(x)
+
+    icount = 0.
+    incount = 0.
+    for i in range(0,1000000):
+        icount += 1.
+        xr = np.random.uniform(xmin,xmax,None)
+        yr = np.random.uniform(ymin,ymax,None)
+        if yr <= fBe(xr,Ar):
+            incount += 1.
+
+    print(incount/icount*(xmax-xmin)*(ymax-ymin))
+
+    return
+
+
+if 1==2:
+
+    A = 1.
+    x = np.array([1.+0.01*float(i) for i in range(0,3500+1)])
+    y = np.array([fBe(elem,A) for elem in x])
+
+
+    plt.figure(figsize=(5.5,2.5))
+    plt.plot(x,y)
+    plt.xlabel("$M/M_\odot$")
+    plt.ylabel("$f_\mathrm{Be}$")
+    plt.xscale("log")
+    #plt.yscale("log")
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+
+
 ### En esta parte se define la ThetaBig, poniendo los intervalos para cada parametro
 def thetabig(n,logSig,M,W,cosi):
    
@@ -1898,8 +1946,6 @@ operations_on_stars = "operations_on_stars.inp"
 
 
 
-######################
-
 def inside_binflims(theta,binflims):
     """
     This function returns True if theta is inside the limits 
@@ -1969,6 +2015,7 @@ def get_instructions(operations_on_stars):
     return instructions
 
 
+######################
 
 def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
         nwalkers, Nchain, folder_output, suffix,\
@@ -1993,9 +2040,10 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
     def lnposterior(theta, x, sigmax, interpars, binflims, other, Nchain):
         
         ### Printing the progress bar on the screen
-        sys.stdout.write("\rSAMPLING: {:2.3%}".\
-                    format(float(sampler.iteration+1)/float(Nchain))+"     ")
-        sys.stdout.flush()
+        if 1==1:
+            sys.stdout.write("\rSAMPLING: {:2.3%}".\
+                        format(float(sampler.iteration+1)/float(Nchain))+"     ")
+            sys.stdout.flush()
         
         ### If there are NaNs in the data, the probability is zero:
         if np.isnan(x[0]) or np.isnan(x[1]) or \
@@ -2030,7 +2078,11 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
         ### alphaW3W4
         xmod0 = lrr.interpLinND(theta,axis,values1,tp,allow_extrapolation)
         ### MW3
-        xmod1 = lrr.interpLinND(theta,axis,values2,tp,allow_extrapolation)
+        if np.isnan(xmod0):
+            xmod1 = np.nan
+        else:
+            xmod1 = lrr.interpLinND(theta,axis,values2,tp,allow_extrapolation)
+    
     
         if (not np.isnan(xmod0)) and (not np.isnan(xmod1)):
             return -0.5*(
@@ -2119,7 +2171,8 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnposterior,\
             args=[x, sigmax, interpars, binflims, other, Nchain])
     ### Sampling...
-    print("SAMPLING for observables alphaW3W4 and MW3...")
+    print("SAMPLING for observables alphaW3W4 and MW3 of HD "+\
+            DATA_LBAND_now[0]+"...")
     pos, prob, state = sampler.run_mcmc(p0, Nchain)
     print("\rSAMPLING: DONE         ")
     
@@ -2140,11 +2193,17 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
                     str(sampler.chain[iwalker][ichain][3])+" "+\
                     str(sampler.chain[iwalker][ichain][4])+"\n"\
                     )
-    f1 = open(folder_output+\
-        "BINF_ALPHAW3W4_W3__"+DATA_LBAND_now[0]+"__"+suffix+".out","w")
+    output_filename = folder_output+\
+        "BINF_ALPHAW3W4_W3__"+DATA_LBAND_now[0]+"__"+suffix+".out"
+    f1 = open(output_filename,"w")
     for iwrite in range(0,len(writeline)):
         f1.write(writeline[iwrite])
     f1.close()
+    
+    
+    
+    
+    
     
     ### Turn this on to see the evolution of the probabilities 
     if 1==1:
@@ -2173,9 +2232,44 @@ def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
         labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
         "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
         fig.savefig("teste_"+DATA_LBAND_now[0]+".png")
+
+    ### Turn this on to make a "CMD-WISE" plot of the results.
+    if 1==2:
+        if Nchain >= 1000:
+            nburnin = 900
+        if 0 <= Nchain < 1000:
+            nburnin = int(Nchain*0.9)
+        xx = []
+        yy = []
+        for ichain in range(nburnin,Nchain):
+            for iwalker in range(0,len(sampler.chain)):
+                point = [   sampler.chain[iwalker][ichain][0],\
+                            sampler.chain[iwalker][ichain][1],\
+                            sampler.chain[iwalker][ichain][2],\
+                            sampler.chain[iwalker][ichain][3],\
+                            sampler.chain[iwalker][ichain][4]\
+                        ]
+                xx.append(lrr.interpLinND(point,axis,vals_alphaW3W4,\
+                        tp,allow_extrapolation))
+                yy.append(lrr.interpLinND(point,axis,vals_MW3,\
+                        tp,allow_extrapolation))
+
+        fig=plt.figure(figsize=(6,6))
+        ax=plt.subplot(1,1,1)
+        plt.scatter(xx,yy,alpha=np.nanmax([1./len(xx),2e-3]))
+        plt.errorbar(obs_alpha34,obs_MW3,xerr=sig_alpha34,yerr=sig_MW3,\
+            color="black",linewidth=2.0)
+        plt.xlabel("$\\alpha_{W3-W4}$")
+        plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+        plt.xlim([-5.,1.6])
+        plt.ylim([0.,-7.])
+        fig.savefig("CMD_WISE_"+DATA_LBAND_now[0]+".png")
+        
     
     return 
 
+
+######################
 
 def BINF_ALPHAL_BL_procedure(DATA_LBAND_now,\
         nwalkers, Nchain, folder_output, suffix,\
@@ -2191,14 +2285,6 @@ def BINF_ALPHAL_BL_procedure(DATA_LBAND_now,\
     
     return
     
-    
-
-
-
-
-
-
-
 
 ######################
 
@@ -2275,116 +2361,12 @@ for iinst in range(0,len(instructions)):
 
 
 
-def fBe(M,A):
-    
-    ell = 1.4*M**3.5
-    log10ell = np.log10(1.4)+3.5*np.log10(M)
-    
-    
-    
-    A0 = -14.09101
-    A1 = 8.71656
-    A2 = -1.95159
-    A3 = 0.11596
-    A4 = 0.
-    A5 = 0.
-    A6 = 0.
-    
-    logf = \
-    A0+\
-    A1*log10ell+\
-    A2*log10ell**2.+\
-    A3*log10ell**3.+\
-    A4*log10ell**4.+\
-    A5*log10ell**5.+\
-    A6*log10ell**6.
-    
-    return A*np.exp(logf)
 
+##########################################################
+##########################################################
+### Now, comes the part 3 of the analysis: analysis of the results 
+### of the operations performed on the stars.
 
-
-def thetabig(n,Sig,M,W,cosi):
-    
-    if 4.2 <= M <= 20. and \
-            0. <= W <= 1. and \
-            0. <= Sig <= 4. and \
-            2. <= n <= 4.5 and \
-            0. <= cosi <= 1.:
-        return 1.
-    else:
-        return 0.
-    
-    
-    
-def lnprior(theta,other):
-    
-    n = theta[0]
-    Sig = theta[1]
-    M = theta[2]
-    W = theta[3]
-    cosi = theta[4]
-    
-    mean_W = other[0]
-    std_W = other[1]
-    
-    thetab = thetabig(n,Sig,M,W,cosi)
-    
-    if thetab == 0.:
-        return -np.inf
-    else:
-        fbe = fBe(M,1.)
-        return -2.3*np.log(M) + np.log(fbe) \
-                    - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
-    
-    
-    
-    
-    
-
-
-
-
-
-def find_area():
-
-    Ar = 1.
-    x = np.array([1.+0.01*float(i) for i in range(0,3500+1)])
-    y = np.array([fBe(elem,Ar) for elem in x])
-
-    ymin = 0.
-    ymax = np.nanmax(y)
-    xmin = np.nanmin(x)
-    xmax = np.nanmax(x)
-
-    icount = 0.
-    incount = 0.
-    for i in range(0,1000000):
-        icount += 1.
-        xr = np.random.uniform(xmin,xmax,None)
-        yr = np.random.uniform(ymin,ymax,None)
-        if yr <= fBe(xr,Ar):
-            incount += 1.
-
-    print(incount/icount*(xmax-xmin)*(ymax-ymin))
-
-    return
-
-
-if 1==2:
-
-    A = 1.
-    x = np.array([1.+0.01*float(i) for i in range(0,3500+1)])
-    y = np.array([fBe(elem,A) for elem in x])
-
-
-    plt.figure(figsize=(5.5,2.5))
-    plt.plot(x,y)
-    plt.xlabel("$M/M_\odot$")
-    plt.ylabel("$f_\mathrm{Be}$")
-    plt.xscale("log")
-    #plt.yscale("log")
-    plt.tight_layout()
-    plt.show()
 
 
 

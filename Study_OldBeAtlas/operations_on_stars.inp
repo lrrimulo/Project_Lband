@@ -13,7 +13,7 @@ END_STAR
 STAR 144
 ### This is a commentary.
 BINF_ALPHAL_BL NO 50 1000 ./bayesian_inference_01/ suffix01
-BINF_ALPHAW3W4_W3 YES 10 70 ./bayesian_inference_01/ suffix01
+BINF_ALPHAW3W4_W3 YES 50 1000 ./bayesian_inference_01/ suffix01
 BINF_LENORZER NO 50 1000 ./bayesian_inference_01/ suffix01
 END_STAR
 
