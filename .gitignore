@@ -3,6 +3,8 @@
 *~
 *.png
 *.pyc
+*.out
+*.inp
 
 OldBeAtlas/*
 
