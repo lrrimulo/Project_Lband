@@ -314,7 +314,37 @@ def List_Stars(to_return):
                     None,
                     "217891"
                     ]
-        
+        ### Results from Vieira 2017 et al. fittings:
+        ### Mass [Msun]
+        ### W
+        ### n
+        ### log10(rho0 [g/cm3])
+        Vieira_fitted =     [
+                            None,
+                            None,
+                            [(25.,9.,9.),(0.9,0.1,0.1),(np.nan,np.nan,np.nan),(np.nan,np.nan,np.nan)],  
+                            [(5.6,1.,1.),(0.6,0.2,0.2),(np.nan,np.nan,np.nan),(np.nan,np.nan,np.nan)],  
+                            [(9.,2.,2.),(0.7,0.1,0.1),(2.3,0.1,0.2),(-12.2,0.1,0.1)], 
+                            [(7.,1.,1.),(0.7,0.1,0.1),(2.6,0.1,0.2),(-11.2,0.1,0.1)], 
+                            None, 
+                            [(3.8,0.6,0.6),(0.8,0.1,0.1),(2.0,0.1,0.2),(-12.2,0.1,0.1)], 
+                            [(5.,1.,1.),(0.8,0.1,0.1),(3.2,0.2,0.3),(-12.3,0.3,0.2)], 
+                            None, 
+                            [(6.5,0.7,0.7),(0.7,0.1,0.1),(5.,1.,1.),(-12.1,0.2,0.2)],
+                            [(5.,1.,1.),(0.8,0.1,0.1),(3.2,0.2,0.2),(-11.2,0.3,0.3)],
+                            None,
+                            [(11.,2.,2.),(0.7,0.1,0.1),(3.3,0.2,0.1),(-11.,0.2,0.2)],
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            [(5.3,0.9,0.9),(0.32,0.06,0.06),(2.4,0.1,0.1),(-12.1,0.1,0.2)]
+                            ]
 
 
 
@@ -328,7 +358,8 @@ def returnDATA_LBAND():
     """
 
     ### 
-    data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = List_Stars("stars")
+    data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = \
+            List_Stars("stars")
     DATA_LBAND = []
     ### Loop over all stars
     for i in range(0,len(HDnames)):
