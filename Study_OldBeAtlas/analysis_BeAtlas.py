@@ -2,6 +2,7 @@
 This is the main program of the L-band project. 
 """
 
+import sys
 import numpy as np
 import pyhdust.phc as phc
 import pyhdust.spectools as spt
@@ -1939,26 +1940,13 @@ if 1==2:
 ### Now, comes the part 2 of the analysis: MCMC bayesian inference for comparison 
 ### of models and observations.
 
+Part2 = False
 ### File containing the operations to be performed on the Be stars
 operations_on_stars = "operations_on_stars.inp"
 
 
 
 
-
-def inside_binflims(theta,binflims):
-    """
-    This function returns True if theta is inside the limits 
-    defined by 'binflims' and False otherwise.
-    """
-    if binflims[0][0] <= theta[0] <= binflims[0][1] and \
-            binflims[1][0] <= theta[1] <= binflims[1][1] and \
-            binflims[2][0] <= theta[2] <= binflims[2][1] and \
-            binflims[3][0] <= theta[3] <= binflims[3][1] and \
-            binflims[4][0] <= theta[4] <= binflims[4][1]:
-        return True
-    else:
-        return False
 
 
 def get_instructions(operations_on_stars):
@@ -1993,7 +1981,7 @@ def get_instructions(operations_on_stars):
                 else:
                     print("There is no Be star called HD "+hdname+\
                             " in the database.")
-            
+        
             ### For this specific star, reads instructions for bayesian 
             ### inference
             if (thisline[0] == "BINF_ALPHAW3W4_W3" or \
@@ -2007,342 +1995,375 @@ def get_instructions(operations_on_stars):
                                                     thisline[4],
                                                     thisline[5]
                                                 ])
-                                            
+
+            ### For this specific star, reads instructions for ...
+            if (thisline[0] == "P3_GRAPHS__BINF_ALPHAW3W4_W3" or \
+                thisline[0] == "P3_GRAPHS__BINF_ALPHAL_BL" or \
+                thisline[0] == "P3_GRAPHS__BINF_LENORZER" )\
+                        and len(thisline) == 4 and starkey == 1:
+                if thisline[1] == "YES":
+                    instructions[-1][1].append([    thisline[0],
+                                                    thisline[2],
+                                                    thisline[3]
+                                                ])
+                                        
             ### Leaves the "STAR" subfolder
             if thisline[0] == "END_STAR" and starkey == 1:
                 starkey = 0
-        
+    
     return instructions
 
 
-######################
 
-def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
-        nwalkers, Nchain, folder_output, suffix,\
-        binflims):
-    """
-    This function does bayesian inference using the observables
-    alphaW3w4 and MW3 only. 
-    It does it for a specific star in our database.
-    It prints the results of emcee in an external file.
-    """
 
-    ### importing sys, for the printing of progress bar
-    import sys
+
+if Part2:
+
+
+    def inside_binflims(theta,binflims):
+        """
+        This function returns True if 'theta' is inside the limits 
+        defined by 'binflims' and False otherwise.
+        """
+        if binflims[0][0] <= theta[0] <= binflims[0][1] and \
+                binflims[1][0] <= theta[1] <= binflims[1][1] and \
+                binflims[2][0] <= theta[2] <= binflims[2][1] and \
+                binflims[3][0] <= theta[3] <= binflims[3][1] and \
+                binflims[4][0] <= theta[4] <= binflims[4][1]:
+            return True
+        else:
+            return False
+
+
+
+
+
+    ######################
+
+    def BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
+            nwalkers, Nchain, folder_output, suffix,\
+            binflims):
+        """
+        This function does bayesian inference using the observables
+        alphaW3w4 and MW3 only. 
+        It does it for a specific star in our database.
+        It prints the results of emcee in an external file.
+        """
     
-    ### Type of interpolation and "allowing extrapolation" for the 
-    ### bayesian inference.
-    tp = "linear"
-    allow_extrapolation = "no"
+        ### Type of interpolation and "allowing extrapolation" for the 
+        ### bayesian inference.
+        tp = "linear"
+        allow_extrapolation = "no"
     
-    ###################
-    ### Posterior for measuring alphaW3W4 and MW3:
-    def lnposterior(theta, x, sigmax, interpars, binflims, other, Nchain):
+        ###################
+        ### Posterior for measuring alphaW3W4 and MW3:
+        def lnposterior(theta, x, sigmax, interpars, binflims, other, Nchain):
         
-        ### Printing the progress bar on the screen
-        if 1==1:
+            ### Printing the progress bar on the screen
             sys.stdout.write("\rSAMPLING: {:2.3%}".\
                         format(float(sampler.iteration+1)/float(Nchain))+"     ")
             sys.stdout.flush()
         
-        ### If there are NaNs in the data, the probability is zero:
-        if np.isnan(x[0]) or np.isnan(x[1]) or \
-                np.isnan(sigmax[0]) or np.isnan(sigmax[1]):
-            return -np.inf
+            ### If there are NaNs in the data, the probability is zero:
+            if np.isnan(x[0]) or np.isnan(x[1]) or \
+                    np.isnan(sigmax[0]) or np.isnan(sigmax[1]):
+                return -np.inf
         
-        ### Imposing the walkers to be inside the hyperrectangle 
-        ### defined by 'binflims':
-        is_inside = inside_binflims(theta, binflims)
-        if not is_inside:
-            return -np.inf
+            ### Imposing the walkers to be inside the hyperrectangle 
+            ### defined by 'binflims':
+            is_inside = inside_binflims(theta, binflims)
+            if not is_inside:
+                return -np.inf
             
-        ### Calculating the prior
-        lnpr=lnprior(theta, other)
-        ### If the prior isn't zero, calculate the likelihood also.
-        if np.isinf(-lnpr):
-            return lnpr
-        else:
-            return lnpr+lnlikelihood(theta, x, sigmax, interpars)
+            ### Calculating the prior
+            lnpr=lnprior(theta, other)
+            ### If the prior isn't zero, calculate the likelihood also.
+            if np.isinf(-lnpr):
+                return lnpr
+            else:
+                return lnpr+lnlikelihood(theta, x, sigmax, interpars)
 
 
-    ### Likelihood function for alphaW3W4 and MW3
-    def lnlikelihood(theta, x, sigmax, interpars):
+        ### Likelihood function for alphaW3W4 and MW3
+        def lnlikelihood(theta, x, sigmax, interpars):
         
-        ### 
-        values1 = interpars[0]
-        values2 = interpars[1]
-        axis = interpars[2]
-        tp = interpars[3]
-        allow_extrapolation = interpars[4]
+            ### 
+            values1 = interpars[0]
+            values2 = interpars[1]
+            axis = interpars[2]
+            tp = interpars[3]
+            allow_extrapolation = interpars[4]
 
-        ### alphaW3W4
-        xmod0 = lrr.interpLinND(theta,axis,values1,tp,allow_extrapolation)
-        ### MW3
-        if np.isnan(xmod0):
-            xmod1 = np.nan
-        else:
-            xmod1 = lrr.interpLinND(theta,axis,values2,tp,allow_extrapolation)
+            ### alphaW3W4
+            xmod0 = lrr.interpLinND(theta,axis,values1,tp,allow_extrapolation)
+            ### MW3
+            if np.isnan(xmod0):
+                xmod1 = np.nan
+            else:
+                xmod1 = lrr.interpLinND(theta,axis,values2,tp,allow_extrapolation)
     
     
-        if (not np.isnan(xmod0)) and (not np.isnan(xmod1)):
-            return -0.5*(
-                        ((xmod0-x[0])/sigmax[0])*((xmod0-x[0])/sigmax[0])+\
-                        ((xmod1-x[1])/sigmax[1])*((xmod1-x[1])/sigmax[1])\
-                        )
-        else:
-            return -np.inf
-    ###################
+            if (not np.isnan(xmod0)) and (not np.isnan(xmod1)):
+                return -0.5*(
+                            ((xmod0-x[0])/sigmax[0])*((xmod0-x[0])/sigmax[0])+\
+                            ((xmod1-x[1])/sigmax[1])*((xmod1-x[1])/sigmax[1])\
+                            )
+            else:
+                return -np.inf
+        ###################
     
     
     
 
-    ### The domain of the grids:
-    npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
-    ### Converting strings to float
-    npar_vals = np.array([float(x) for x in npar])
-    logsigpar_vals = np.array([newlog10abs(float(x),1e5) for x in sigpar])
-    Mpar_vals = np.array([float(x) for x in Mpar])
-    obpar_vals = np.array([float(x) for x in obpar])
-    cosipar_vals = np.array([float(x) for x in cosipar])
+        ### The domain of the grids:
+        npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
+        ### Converting strings to float
+        npar_vals = np.array([float(x) for x in npar])
+        logsigpar_vals = np.array([newlog10abs(float(x),1e5) for x in sigpar])
+        Mpar_vals = np.array([float(x) for x in Mpar])
+        obpar_vals = np.array([float(x) for x in obpar])
+        cosipar_vals = np.array([float(x) for x in cosipar])
 
-    ### Defining the domain of the grid
-    axis = [npar_vals,logsigpar_vals,Mpar_vals,obpar_vals,cosipar_vals]
-    ndim = len(axis)
+        ### Defining the domain of the grid
+        axis = [npar_vals,logsigpar_vals,Mpar_vals,obpar_vals,cosipar_vals]
+        ndim = len(axis)
 
-    ### Attributing values for every element of the grid
-    vals_alphaW3W4 = []
-    vals_MW3 = []
-    i4 = obpar.index("1.40")
-    for i1 in range(0,len(npar_vals)):
-        for i2 in range(0,len(logsigpar_vals)):
-            for i3 in range(0,len(Mpar_vals)):
-                for i4_notused in range(0,len(obpar_vals)):
-                    for i5 in range(0,len(cosipar_vals)):
-                        vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
-                        vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
+        ### Attributing values for every element of the grid
+        vals_alphaW3W4 = []
+        vals_MW3 = []
+        i4 = obpar.index("1.40")
+        for i1 in range(0,len(npar_vals)):
+            for i2 in range(0,len(logsigpar_vals)):
+                for i3 in range(0,len(Mpar_vals)):
+                    for i4_notused in range(0,len(obpar_vals)):
+                        for i5 in range(0,len(cosipar_vals)):
+                            vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
+                            vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
     
-    ### Turn this on to fill the NaNs in the values (probably due to 
-    ### the fact that the grid was not entirely computed).
-    if 1==1:
-        ### folder for printing the results
-        folder_filledNaNs = "./extrap01/"
-        ### Below, "yes" means printing the progress of the 
-        ### filling NaNs procedure
-        prints = "yes"
-        ### Allowing extrapolation for the filling the NaNs procedure
-        allow_extrapolation_fill = "yes"
-        ### filling the NaNs of alphaW3W4
-        vals_alphaW3W4_name = "vals_alphaW3W4"
-        vals_alphaW3W4 = fillingNaNs(folder_filledNaNs,\
-                        vals_alphaW3W4_name,axis,\
-                        vals_alphaW3W4,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of MW3
-        vals_MW3_name = "vals_MW3"
-        vals_MW3 = fillingNaNs(folder_filledNaNs,\
-                        vals_MW3_name,axis,\
-                        vals_MW3,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-    
-    ### Data on this specific star (to go to bayesian inference)
-    obs_alpha34 = DATA_LBAND_now[6][4][0]
-    sig_alpha34 = DATA_LBAND_now[6][4][1]
-    obs_MW3 = DATA_LBAND_now[6][5][4]
-    sig_MW3 = DATA_LBAND_now[6][5][5]
-    x = [obs_alpha34,obs_MW3]
-    sigmax = [sig_alpha34,sig_MW3]
-    ###
-    interpars = [vals_alphaW3W4, vals_MW3, axis, tp, allow_extrapolation]
-    other = [0.81, 0.12]
-    
-    ### Choose an initial set of positions for the walkers.
-    ### (It is a list of ndim-dimensional lists.)
-    p0 = [  [
-            np.random.uniform(binflims[0][0],binflims[0][1]),
-            np.random.uniform(binflims[1][0],binflims[1][1]),
-            np.random.uniform(binflims[2][0],binflims[2][1]),
-            np.random.uniform(binflims[3][0],binflims[3][1]),
-            np.random.uniform(binflims[4][0],binflims[4][1])
-            ] for i in range(nwalkers)
-        ]
-    
-    
-    ### Initializing the sampler with the chosen specs.
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnposterior,\
-            args=[x, sigmax, interpars, binflims, other, Nchain])
-    ### Sampling...
-    print("SAMPLING for observables alphaW3W4 and MW3 of HD "+\
-            DATA_LBAND_now[0]+"...")
-    pos, prob, state = sampler.run_mcmc(p0, Nchain)
-    print("\rSAMPLING: DONE         ")
-    
-    ### Writing results of the bayesian inference an external file,
-    ### for future analysis
-    writeline = []
-    ### Printing the mean acceptance fraction
-    ### (This number should be between 0.25 and 0.5)
-    writeline.append("MAF "+str(np.mean(sampler.acceptance_fraction))+"\n")
-    ### Printing the walkers's position for every element of the chain:
-    for ichain in range(0,len(sampler.chain[0])):
-        for iwalker in range(0,len(sampler.chain)):
-            writeline.append(\
-                    str(sampler.lnprobability[iwalker][ichain])+" "+\
-                    str(sampler.chain[iwalker][ichain][0])+" "+\
-                    str(sampler.chain[iwalker][ichain][1])+" "+\
-                    str(sampler.chain[iwalker][ichain][2])+" "+\
-                    str(sampler.chain[iwalker][ichain][3])+" "+\
-                    str(sampler.chain[iwalker][ichain][4])+"\n"\
-                    )
-    output_filename = folder_output+\
-        "BINF_ALPHAW3W4_W3__"+DATA_LBAND_now[0]+"__"+suffix+".out"
-    f1 = open(output_filename,"w")
-    for iwrite in range(0,len(writeline)):
-        f1.write(writeline[iwrite])
-    f1.close()
+        ### Turn this on to fill the NaNs in the values (probably due to 
+        ### the fact that the grid was not entirely computed).
+        if 1==1:
+            ### folder for printing the results
+            folder_filledNaNs = "./extrap01/"
+            ### Below, "yes" means printing the progress of the 
+            ### filling NaNs procedure
+            prints = "yes"
+            ### Allowing extrapolation for the filling the NaNs procedure
+            allow_extrapolation_fill = "yes"
+            ### filling the NaNs of alphaW3W4
+            vals_alphaW3W4_name = "vals_alphaW3W4"
+            vals_alphaW3W4 = fillingNaNs(folder_filledNaNs,\
+                            vals_alphaW3W4_name,axis,\
+                            vals_alphaW3W4,\
+                            tp,allow_extrapolation_fill,prints,overwrite = False)
+            ### filling the NaNs of MW3
+            vals_MW3_name = "vals_MW3"
+            vals_MW3 = fillingNaNs(folder_filledNaNs,\
+                            vals_MW3_name,axis,\
+                            vals_MW3,\
+                            tp,allow_extrapolation_fill,prints,overwrite = False)
     
     
     
+        ### Data on this specific star (to go to bayesian inference)
+        obs_alpha34 = DATA_LBAND_now[6][4][0]
+        sig_alpha34 = DATA_LBAND_now[6][4][1]
+        obs_MW3 = DATA_LBAND_now[6][5][4]
+        sig_MW3 = DATA_LBAND_now[6][5][5]
+        x = [obs_alpha34,obs_MW3]
+        sigmax = [sig_alpha34,sig_MW3]
+        ###
+        interpars = [vals_alphaW3W4, vals_MW3, axis, tp, allow_extrapolation]
+        other = [0.81, 0.12]
+    
+        ### Choose an initial set of positions for the walkers.
+        ### (It is a list of ndim-dimensional lists.)
+        p0 = [  [
+                np.random.uniform(binflims[0][0],binflims[0][1]),
+                np.random.uniform(binflims[1][0],binflims[1][1]),
+                np.random.uniform(binflims[2][0],binflims[2][1]),
+                np.random.uniform(binflims[3][0],binflims[3][1]),
+                np.random.uniform(binflims[4][0],binflims[4][1])
+                ] for i in range(nwalkers)
+            ]
     
     
-    
-    ### Turn this on to see the evolution of the probabilities 
-    if 1==1:
-        lnprobability = sampler.lnprobability
-
-        poslnprob=np.arange(1,len(lnprobability[0])+1)
-        fig=plt.figure(figsize=(6,6))
-        ax=plt.subplot(1,1,1)
+        ### Initializing the sampler with the chosen specs.
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, lnposterior,\
+                args=[x, sigmax, interpars, binflims, other, Nchain])
+        ### Sampling...
+        print("SAMPLING for observables alphaW3W4 and MW3 of HD "+\
+                DATA_LBAND_now[0]+"...")
+        pos, prob, state = sampler.run_mcmc(p0, Nchain)
+        print("\rSAMPLING: DONE         ")
         
-        for iwalker in range(0,len(lnprobability)):
-            plt.plot(poslnprob,[np.arcsinh(lnprobability[iwalker][ichain]) \
-                for ichain in range(0,len(lnprobability[0]))], \
-                color='black', linewidth=0.05, linestyle='-')
-        plt.ylabel("$\\arcsinh(\\ln(\\mathrm{prob}))$")
-        plt.xlabel("position in the chain")
-        fig.savefig("convergence_"+DATA_LBAND_now[0]+".png")
-    
-    ### Turn this on to make a corner plot of the results.
-    if 1==1:
-        if Nchain >= 1000:
-            nburnin = 300
-        if 0 <= Nchain < 1000:
-            nburnin = int(Nchain*0.3)
-        samples = sampler.chain[:, nburnin:, :].reshape((-1, ndim))
-        fig = corner.corner(samples, \
-        labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
-        "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
-        fig.savefig("teste_"+DATA_LBAND_now[0]+".png")
-
-    ### Turn this on to make a "CMD-WISE" plot of the results.
-    if 1==2:
-        if Nchain >= 1000:
-            nburnin = 900
-        if 0 <= Nchain < 1000:
-            nburnin = int(Nchain*0.9)
-        xx = []
-        yy = []
-        for ichain in range(nburnin,Nchain):
+        ### Writing results of the bayesian inference an external file,
+        ### for future analysis
+        writeline = []
+        ### Printing the mean acceptance fraction
+        ### (This number should be between 0.25 and 0.5)
+        writeline.append("MAF "+str(np.mean(sampler.acceptance_fraction))+"\n")
+        ### Printing the walkers's position for every element of the chain:
+        for ichain in range(0,len(sampler.chain[0])):
             for iwalker in range(0,len(sampler.chain)):
-                point = [   sampler.chain[iwalker][ichain][0],\
-                            sampler.chain[iwalker][ichain][1],\
-                            sampler.chain[iwalker][ichain][2],\
-                            sampler.chain[iwalker][ichain][3],\
-                            sampler.chain[iwalker][ichain][4]\
+                writeline.append(\
+                        str(sampler.lnprobability[iwalker][ichain])+" "+\
+                        str(sampler.chain[iwalker][ichain][0])+" "+\
+                        str(sampler.chain[iwalker][ichain][1])+" "+\
+                        str(sampler.chain[iwalker][ichain][2])+" "+\
+                        str(sampler.chain[iwalker][ichain][3])+" "+\
+                        str(sampler.chain[iwalker][ichain][4])+"\n"\
+                        )
+        output_filename = folder_output+\
+            "BINF_ALPHAW3W4_W3__"+DATA_LBAND_now[0]+"__"+suffix+".out"
+        f1 = open(output_filename,"w")
+        for iwrite in range(0,len(writeline)):
+            f1.write(writeline[iwrite])
+        f1.close()
+    
+    
+    
+    
+    
+    
+        ### Turn this on to see the evolution of the probabilities 
+        if 1==1:
+            lnprobability = sampler.lnprobability
+    
+            poslnprob=np.arange(1,len(lnprobability[0])+1)
+            fig=plt.figure(figsize=(6,6))
+            ax=plt.subplot(1,1,1)
+        
+            for iwalker in range(0,len(lnprobability)):
+                plt.plot(poslnprob,[np.arcsinh(lnprobability[iwalker][ichain]) \
+                    for ichain in range(0,len(lnprobability[0]))], \
+                    color='black', linewidth=0.05, linestyle='-')
+            plt.ylabel("$\\arcsinh(\\ln(\\mathrm{prob}))$")
+            plt.xlabel("position in the chain")
+            fig.savefig("convergence_"+DATA_LBAND_now[0]+".png")
+    
+        ### Turn this on to make a corner plot of the results.
+        if 1==1:
+            if Nchain >= 1000:
+                nburnin = 300
+            if 0 <= Nchain < 1000:
+                nburnin = int(Nchain*0.3)
+            samples = sampler.chain[:, nburnin:, :].reshape((-1, ndim))
+            fig = corner.corner(samples, \
+            labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
+            "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
+            fig.savefig("teste_"+DATA_LBAND_now[0]+".png")
+
+        ### Turn this on to make a "CMD-WISE" plot of the results.
+        if 1==2:
+            if Nchain >= 1000:
+                nburnin = 900
+            if 0 <= Nchain < 1000:
+                nburnin = int(Nchain*0.9)
+            xx = []
+            yy = []
+            for ichain in range(nburnin,Nchain):
+                for iwalker in range(0,len(sampler.chain)):
+                    point = [   sampler.chain[iwalker][ichain][0],\
+                                sampler.chain[iwalker][ichain][1],\
+                                sampler.chain[iwalker][ichain][2],\
+                                sampler.chain[iwalker][ichain][3],\
+                                sampler.chain[iwalker][ichain][4]\
+                            ]
+                    xx.append(lrr.interpLinND(point,axis,vals_alphaW3W4,\
+                            tp,allow_extrapolation))
+                    yy.append(lrr.interpLinND(point,axis,vals_MW3,\
+                            tp,allow_extrapolation))
+    
+            fig=plt.figure(figsize=(6,6))
+            ax=plt.subplot(1,1,1)
+            plt.scatter(xx,yy,alpha=np.nanmax([1./len(xx),2e-3]))
+            plt.errorbar(obs_alpha34,obs_MW3,xerr=sig_alpha34,yerr=sig_MW3,\
+                color="black",linewidth=2.0)
+            plt.xlabel("$\\alpha_{W3-W4}$")
+            plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+            plt.xlim([-5.,1.6])
+            plt.ylim([0.,-7.])
+            fig.savefig("CMD_WISE_"+DATA_LBAND_now[0]+".png")
+        
+    
+        return 
+
+
+    ######################
+
+    def BINF_ALPHAL_BL_procedure(DATA_LBAND_now,\
+            nwalkers, Nchain, folder_output, suffix,\
+            binflims):
+        """
+        This function does bayesian inference using the observables
+        alphaL and MBL only. 
+        It does it for a specific star in our database.
+        It prints the results of emcee in an external file.
+        """
+        pass
+        ### TODO: Fredy continues here...
+        
+        return
+    
+
+    ######################
+
+
+
+    ### Getting instructions of operations to be applied to the data on
+    ### Be stars.
+    instructions = get_instructions(operations_on_stars)
+    ### Reading the data on our Be stars
+    data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = \
+                    read_data.List_Stars("stars")
+    DATA_LBAND = read_data.returnDATA_LBAND()
+    fluxhumphreys, EWhumphreys, GFWHMhumphreys, \
+                fluxBra, EWBra, GFWHMBra, \
+                fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
+
+    ### Now, this is the part in which the instructions are executed.
+    for iinst in range(0,len(instructions)):
+        intructs_now = [x for x in instructions[iinst]]
+        istar = HDnames.index(intructs_now[0])
+    
+        ### Loop over the instructions for this specific Be star
+        for iinow in range(0,len(intructs_now[1])):
+            ### Instructions: bayesian inference with the observables
+            ### alphaW3W4 and MW3.
+            if intructs_now[1][iinow][0] == "BINF_ALPHAW3W4_W3":
+                ### 
+                ndim = 5 
+                DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
+                nwalkers = int(intructs_now[1][iinow][1])*2*ndim
+                Nchain = int(intructs_now[1][iinow][2])
+                folder_output = intructs_now[1][iinow][3]
+                suffix = intructs_now[1][iinow][4]
+                ### Hyperrectangular limits for the bayesian inference.
+                binflims = [
+                        [3.0,4.5],
+                        [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
+                        [4.2,14.6],
+                        [1.2,1.4],
+                        [0.26,1.00]
                         ]
-                xx.append(lrr.interpLinND(point,axis,vals_alphaW3W4,\
-                        tp,allow_extrapolation))
-                yy.append(lrr.interpLinND(point,axis,vals_MW3,\
-                        tp,allow_extrapolation))
-
-        fig=plt.figure(figsize=(6,6))
-        ax=plt.subplot(1,1,1)
-        plt.scatter(xx,yy,alpha=np.nanmax([1./len(xx),2e-3]))
-        plt.errorbar(obs_alpha34,obs_MW3,xerr=sig_alpha34,yerr=sig_MW3,\
-            color="black",linewidth=2.0)
-        plt.xlabel("$\\alpha_{W3-W4}$")
-        plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
-        fig.savefig("CMD_WISE_"+DATA_LBAND_now[0]+".png")
+                ### 
+                BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
+                        nwalkers, Nchain, folder_output, suffix,\
+                        binflims)
         
-    
-    return 
-
-
-######################
-
-def BINF_ALPHAL_BL_procedure(DATA_LBAND_now,\
-        nwalkers, Nchain, folder_output, suffix,\
-        binflims):
-    """
-    This function does bayesian inference using the observables
-    alphaL and MBL only. 
-    It does it for a specific star in our database.
-    It prints the results of emcee in an external file.
-    """
-    pass
-    ### TODO: Fredy continues here...
-    
-    return
-    
-
-######################
-
-
-
-### Getting instructions of operations to be applied to the data on
-### Be stars.
-instructions = get_instructions(operations_on_stars)
-### Reading the data on our Be stars
-data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = \
-                read_data.List_Stars("stars")
-DATA_LBAND = read_data.returnDATA_LBAND()
-fluxhumphreys, EWhumphreys, GFWHMhumphreys, \
-            fluxBra, EWBra, GFWHMBra, \
-            fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
-
-### Now, this is the part in which the instructions are executed.
-for iinst in range(0,len(instructions)):
-    intructs_now = [x for x in instructions[iinst]]
-    istar = HDnames.index(intructs_now[0])
-    
-    ### Loop over the instructions for this specific Be star
-    for iinow in range(0,len(intructs_now[1])):
-        ### Instructions: bayesian inference with the observables
-        ### alphaW3W4 and MW3.
-        if intructs_now[1][iinow][0] == "BINF_ALPHAW3W4_W3":
-            ### 
-            ndim = 5 
-            DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
-            nwalkers = int(intructs_now[1][iinow][1])*2*ndim
-            Nchain = int(intructs_now[1][iinow][2])
-            folder_output = intructs_now[1][iinow][3]
-            suffix = intructs_now[1][iinow][4]
-            ### Hyperrectangular limits for the bayesian inference.
-            binflims = [
-                    [3.0,4.5],
-                    [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
-                    [4.2,14.6],
-                    [1.2,1.4],
-                    [0.26,1.00]
-                    ]
-            ### 
-            BINF_ALPHAW3W4_W3_procedure(DATA_LBAND_now,\
-                    nwalkers, Nchain, folder_output, suffix,\
-                    binflims)
-        
-        ### TODO: Fredy should complete this...
-        if intructs_now[1][iinow][0] == "BINF_ALPHAL_BL":
-            ### 
-            ndim = 5
-            DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
-            nwalkers = int(intructs_now[1][iinow][1])*2*ndim
-            Nchain = int(intructs_now[1][iinow][2])
-            folder_output = intructs_now[1][iinow][3]
-            suffix = intructs_now[1][iinow][4]
+            ### TODO: Fredy should complete this...
+            if intructs_now[1][iinow][0] == "BINF_ALPHAL_BL":
+                ### 
+                ndim = 5
+                DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
+                nwalkers = int(intructs_now[1][iinow][1])*2*ndim
+                Nchain = int(intructs_now[1][iinow][2])
+                folder_output = intructs_now[1][iinow][3]
+                suffix = intructs_now[1][iinow][4]
             
-            ### TODO (Fredy)
-            ### Call procedure for bayesian inference
+                ### TODO (Fredy)
+                ### Call procedure for bayesian inference
 
 
 
@@ -2366,6 +2387,197 @@ for iinst in range(0,len(instructions)):
 ##########################################################
 ### Now, comes the part 3 of the analysis: analysis of the results 
 ### of the operations performed on the stars.
+
+Part3 = True
+if Part3:
+
+    def P3_GRAPHS__BINF_ALPHAW3W4_W3_procedure(intructs_now,\
+            DATA_LBAND_now,W_lnprobs,W_theta,MAF):
+        """
+        This function does graphs and calculations for the bayesian 
+        inference performed in Part 2 for
+        alphaW3w4 and MW3 only. 
+        It does it for a specific star in our database.
+        It prints the results of emcee in an external file.
+        """
+        
+        ### 
+        figures_folder = "figures/"
+        
+        ### 
+        nburnin_fac = 0.3
+    
+        ### Turn this on to make a corner plot of the results.
+        if 1==1:
+            nburnin = int(nburnin_fac*len(W_theta))
+            samples = [W_theta[i] for i in range(nburnin,len(W_theta))]
+            fig = corner.corner(samples, \
+            labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
+            "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
+            iinstr = [x[0] for x in intructs_now[1]].\
+                    index("P3_GRAPHS__BINF_ALPHAW3W4_W3")
+            fig.savefig(intructs_now[1][iinstr][1]+figures_folder+\
+                    "cornertheta__"+DATA_LBAND_now[0]+"__"+\
+                    intructs_now[1][iinstr][2]+".png")
+
+
+
+        ### Type of interpolation and "allowing extrapolation" for the 
+        ### bayesian inference.
+        tp = "linear"
+        allow_extrapolation = "no"
+
+        ### The domain of the grids:
+        npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()
+        ### Converting strings to float
+        npar_vals = np.array([float(x) for x in npar])
+        logsigpar_vals = np.array([newlog10abs(float(x),1e5) for x in sigpar])
+        Mpar_vals = np.array([float(x) for x in Mpar])
+        obpar_vals = np.array([float(x) for x in obpar])
+        cosipar_vals = np.array([float(x) for x in cosipar])
+
+        ### Defining the domain of the grid
+        axis = [npar_vals,logsigpar_vals,Mpar_vals,obpar_vals,cosipar_vals]
+        ndim = len(axis)
+
+
+        ### Turn this on to make a "CMD-WISE" plot of the results.
+        if 1==1:
+
+            ### Attributing values for every element of the grid
+            vals_alphaW3W4 = []
+            vals_MW3 = []
+            i4 = obpar.index("1.40")
+            for i1 in range(0,len(npar_vals)):
+                for i2 in range(0,len(logsigpar_vals)):
+                    for i3 in range(0,len(Mpar_vals)):
+                        for i4_notused in range(0,len(obpar_vals)):
+                            for i5 in range(0,len(cosipar_vals)):
+                                vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
+                                vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
+        
+            ### Turn this on to fill the NaNs in the values (probably due to 
+            ### the fact that the grid was not entirely computed).
+            if 1==1:
+                ### folder for printing the results
+                folder_filledNaNs = "./extrap01/"
+                ### Below, "yes" means printing the progress of the 
+                ### filling NaNs procedure
+                prints = "yes"
+                ### Allowing extrapolation for the filling the NaNs procedure
+                allow_extrapolation_fill = "yes"
+                ### filling the NaNs of alphaW3W4
+                vals_alphaW3W4_name = "vals_alphaW3W4"
+                vals_alphaW3W4 = fillingNaNs(folder_filledNaNs,\
+                                vals_alphaW3W4_name,axis,\
+                                vals_alphaW3W4,\
+                                tp,allow_extrapolation_fill,prints,overwrite = False)
+                ### filling the NaNs of MW3
+                vals_MW3_name = "vals_MW3"
+                vals_MW3 = fillingNaNs(folder_filledNaNs,\
+                                vals_MW3_name,axis,\
+                                vals_MW3,\
+                                tp,allow_extrapolation_fill,prints,overwrite = False)
+    
+            ### Data on this specific star (to go to bayesian inference)
+            obs_alpha34 = DATA_LBAND_now[6][4][0]
+            sig_alpha34 = DATA_LBAND_now[6][4][1]
+            obs_MW3 = DATA_LBAND_now[6][5][4]
+            sig_MW3 = DATA_LBAND_now[6][5][5]
+
+
+            ### 
+            Nplots = np.nanmin([200,len(W_theta)])
+            ### 
+            xx = []
+            yy = []
+            for ielem in range(0,Nplots):
+                point = W_theta[-1-ielem]
+                xx.append(lrr.interpLinND(point,axis,vals_alphaW3W4,\
+                        tp,allow_extrapolation))
+                yy.append(lrr.interpLinND(point,axis,vals_MW3,\
+                        tp,allow_extrapolation))
+    
+            fig=plt.figure(figsize=(6,6))
+            ax=plt.subplot(1,1,1)
+            plt.scatter(xx,yy,alpha=np.nanmax([0.1,2e-3]))
+            plt.errorbar(obs_alpha34,obs_MW3,xerr=sig_alpha34,yerr=sig_MW3,\
+                color="black",linewidth=2.0)
+            plt.xlabel("$\\alpha_{W3-W4}$")
+            plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+            plt.xlim([-5.,1.6])
+            plt.ylim([0.,-7.])
+            fig.savefig(intructs_now[1][iinstr][1]+figures_folder+\
+                    "CMDWISE__"+DATA_LBAND_now[0]+"__"+\
+                    intructs_now[1][iinstr][2]+".png")
+
+
+
+        return
+    
+    
+    
+    
+    ### Getting instructions of operations to be applied to the data on
+    ### Be stars.
+    instructions = get_instructions(operations_on_stars)
+    ### Reading the data on our Be stars
+    data_folder, HDnames, Starnames, SIMBAD_Spt, YYYYMMDD_LBAND = \
+                    read_data.List_Stars("stars")
+    DATA_LBAND = read_data.returnDATA_LBAND()
+    fluxhumphreys, EWhumphreys, GFWHMhumphreys, \
+                fluxBra, EWBra, GFWHMBra, \
+                fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
+
+    ### Now, this is the part in which the instructions are executed.
+    for iinst in range(0,len(instructions)):
+        intructs_now = [x for x in instructions[iinst]]
+        istar = HDnames.index(intructs_now[0])
+    
+        ### Loop over the instructions for this specific Be star
+        for iinow in range(0,len(intructs_now[1])):
+            
+            ### Instructions: bayesian inference with the observables
+            ### alphaW3W4 and MW3.
+            if intructs_now[1][iinow][0] == "P3_GRAPHS__BINF_ALPHAW3W4_W3":
+                
+                possible_file = intructs_now[1][iinow][1]+"BINF_ALPHAW3W4_W3__"+\
+                        HDnames[istar]+"__"+intructs_now[1][iinow][2]+".out"
+                files_list = glob.glob(intructs_now[1][iinow][1]+"*")
+                if possible_file in files_list:
+                    ### 
+                    ifile = files_list.index(possible_file)
+                    filenow = files_list[ifile]
+                    
+                    print("")
+                    print("P3_GRAPHS__BINF_ALPHAW3W4_W3 for \n"+filenow)
+                    ### Reading the output file from bayesian analysis
+                    f1 = open(filenow,"r")
+                    linesf1 = f1.readlines()
+                    f1.close()
+                    ### 
+                    MAF = float(linesf1[0].split()[1])
+                    W_lnprobs = []
+                    W_theta = []
+                    ### 
+                    for iline in range(1,len(linesf1)):
+                        W_lnprobs.append(float(linesf1[iline].split()[0]))
+                        W_theta.append([
+                                        float(linesf1[iline].split()[1]),
+                                        float(linesf1[iline].split()[2]),
+                                        float(linesf1[iline].split()[3]),
+                                        float(linesf1[iline].split()[4]),
+                                        float(linesf1[iline].split()[5])
+                                        ])
+                    ### 
+                    DATA_LBAND_now = [x for x in DATA_LBAND[istar]]
+                        
+                    ### 
+                    P3_GRAPHS__BINF_ALPHAW3W4_W3_procedure(intructs_now,\
+                            DATA_LBAND_now,W_lnprobs,W_theta,MAF)
+
+
+
 
 
 
