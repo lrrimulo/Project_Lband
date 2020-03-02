@@ -1940,7 +1940,7 @@ if 1==2:
 ### Now, comes the part 2 of the analysis: MCMC bayesian inference for comparison 
 ### of models and observations.
 
-Part2 = False
+Part2 = True
 ### File containing the operations to be performed on the Be stars
 operations_on_stars = "operations_on_stars.inp"
 
