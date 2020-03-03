@@ -231,7 +231,7 @@ def check_completeness(files_fullsed_new):
     and what are the missing models.
     
     WARNING: It assumes that the grid is hyperrectangular. This however is not 
-    the case. Hence, this program needs correction!
+    the case. Hence, this function needs correction!
     """
     ### The domain of the grid of HDUST models:
     npar, sigpar, Mpar, obpar, cosipar = domain_PLgrid()

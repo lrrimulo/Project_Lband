@@ -15,6 +15,24 @@ import pyhdust.spectools as spt
 
 
 
+
+def alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R):
+    """
+
+    """
+    return 1.-np.log(B__L/(lamb2B-lamb1B)*(lamb2R-lamb1R)/R__L)/\
+                np.log((lamb2R+lamb1R)/(lamb2B+lamb1B))
+
+
+def err_alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R,errB__L,errR__L):
+    """
+    
+    """
+    return 1./np.log((lamb2R+lamb1R)/(lamb2B+lamb1B))*\
+                np.sqrt(errB__L**2./B__L**2.+errR__L**2./R__L**2.)
+
+
+
 ##########################################################
 ### Reading data on Be stars: 
 

@@ -244,6 +244,12 @@ LINE_HUMPHREY25 = attribution_procedure5(LINE_HUMPHREY25_read,5)
 ###
 BL_FLUX = attribution_procedure5(BL_FLUX_read,3)
 RL_FLUX = attribution_procedure5(RL_FLUX_read,3)
+### Obtaining alphaL
+ALPHAL = read_data.alphaL(BL_FLUX[:,:,:,:,:,0],\
+            BL_FLUX[:,:,:,:,:,1],BL_FLUX[:,:,:,:,:,2],\
+            RL_FLUX[:,:,:,:,:,0],\
+            RL_FLUX[:,:,:,:,:,1],RL_FLUX[:,:,:,:,:,2])
+
 
 
 
@@ -1419,19 +1425,27 @@ if 1==2:
         auxi_H14BL=[]
         auxi_annotate_vec=[]
         for iplot2 in range(0,len(cosipar)):
-            auxi_XL.append(1.-np.log10(
-                (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]/
-                (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
-                BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]))/\
-                (RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]/
-                (RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
-                RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]))
-                )/np.log10(\
-                (RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]+\
-                RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2])/\
-                (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]+\
-                BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2])
-                ))
+            #auxi_XL.append(1.-np.log10(
+            #    (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]/
+            #    (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
+            #    BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]))/\
+            #    (RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]/
+            #    (RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
+            #    RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]))
+            #    )/np.log10(\
+            #    (RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]+\
+            #    RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2])/\
+            #    (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1]+\
+            #    BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2])
+            #    ))
+            auxi_XL.append(
+                read_data.alphaL(BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0],\
+                BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1],\
+                BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2],\
+                RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0],\
+                RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1],\
+                RL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2])
+                )
             auxi_YL.append(-2.5*np.log10(
                 BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]/\
                 B_Vega))
@@ -2247,7 +2261,8 @@ if Part2:
             if Nchain >= 1000:
                 nburnin = 300
             if 0 <= Nchain < 1000:
-                nburnin = int(Nchain*0.3)
+                nburnin = int(
+                Nchain*0.3)
             samples = sampler.chain[:, nburnin:, :].reshape((-1, ndim))
             fig = corner.corner(samples, \
             labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
