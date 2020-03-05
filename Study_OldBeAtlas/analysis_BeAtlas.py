@@ -2652,7 +2652,7 @@ if Part2:
 Part3 = True
 if Part3:
 
-    def other_thetas(W_lnprobs,W_theta):
+    def other_thetas(W_lnprobs,W_theta,nburnin_fac):
     
         ### 
         Ndim = len(W_theta[0])
@@ -2666,11 +2666,12 @@ if Part3:
         reduced_W_lnprobs = []
         for ipoint in range(0,Nnew):
             for idim in range(0,Ndim):
-                reduced_W_lnprobs.append(W_lnprobs[-1-ipoint])
+                reduced_W_theta_v2[idim].append(W_theta_v2[idim][-1-ipoint])
+            reduced_W_lnprobs.append(W_lnprobs[-1-ipoint])
                     
         return Ndim,W_theta_v2,reduced_W_theta_v2,reduced_W_lnprobs
 
-    def theta_stats(reduced_W_theta_v2,val_analysis,Ndim):
+    def theta_stats(reduced_W_theta_v2,val_analysis,Ndim,nburnin_fac):
         """
         
         """
@@ -2725,11 +2726,11 @@ if Part3:
         nburnin_fac = 0.3
 
         Ndim,W_theta_v2,reduced_W_theta_v2,reduced_W_lnprobs = \
-                other_thetas(W_lnprobs,W_theta)
+                other_thetas(W_lnprobs,W_theta,nburnin_fac)
                 
         
         val_list,bound_list = \
-                theta_stats(reduced_W_theta_v2,val_analysis,Ndim)
+                theta_stats(reduced_W_theta_v2,val_analysis,Ndim,nburnin_fac)
                         
         sys.exit()
         
