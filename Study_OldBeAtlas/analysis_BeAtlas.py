@@ -1956,7 +1956,7 @@ if 1==2:
 ### Now, comes the part 2 of the analysis: MCMC bayesian inference for comparison 
 ### of models and observations.
 
-Part2 = False
+Part2 = True
 ### File containing the operations to be performed on the Be stars
 operations_on_stars = "operations_on_stars.inp"
 
@@ -2425,8 +2425,8 @@ if Part2:
                             vals_alphaL,\
                             tp,allow_extrapolation_fill,prints,overwrite = False)
             ### filling the NaNs of MBL
-            vals_MW3_name = "vals_MBL"
-            vals_MW3 = fillingNaNs(folder_filledNaNs,\
+            vals_MBL_name = "vals_MBL"
+            vals_MBL = fillingNaNs(folder_filledNaNs,\
                             vals_MBL_name,axis,\
                             vals_MBL,\
                             tp,allow_extrapolation_fill,prints,overwrite = False)
@@ -2592,7 +2592,7 @@ if Part2:
                 suffix = intructs_now[1][iinow][4]
                 ### Hyperrectangular limits for the bayesian inference.
                 binflims = [
-                        [3.0,4.5],
+                        [2.0,6.5],
                         [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
                         [4.2,14.6],
                         [1.2,1.4],
@@ -2649,7 +2649,7 @@ if Part2:
 ### Now, comes the part 3 of the analysis: analysis of the results 
 ### of the operations performed on the stars.
 
-Part3 = True
+Part3 = False
 if Part3:
 
     def other_thetas(W_lnprobs,W_theta,nburnin_fac):
