@@ -2652,24 +2652,8 @@ if Part2:
 Part3 = True
 if Part3:
 
-    def P3_GRAPHS__BINF_ALPHAW3W4_W3_procedure(intructs_now,\
-            DATA_LBAND_now,W_lnprobs,W_theta,MAF):
-        """
-        This function does graphs and calculations for the bayesian 
-        inference performed in Part 2 for
-        alphaW3w4 and MW3 only. 
-        It does it for a specific star in our database.
-        It prints the results of emcee in an external file.
-        """
-        
-        ### 
-        figures_folder = "figures/"
-        val_analysis = "HDR"
-        
-        ### 
-        nburnin_fac = 0.3
-        
-        
+    def other_thetas(W_lnprobs,W_theta):
+    
         ### 
         Ndim = len(W_theta[0])
         W_theta_v2 = [[] for idim in range(0,Ndim)]
@@ -2679,10 +2663,18 @@ if Part3:
         ### 
         Nnew = np.nanmin([5000,int((1-nburnin_fac)*len(W_theta_v2[0]))])
         reduced_W_theta_v2 = [[] for idim in range(0,Ndim)]
+        reduced_W_lnprobs = []
         for ipoint in range(0,Nnew):
             for idim in range(0,Ndim):
-                reduced_W_theta_v2[idim].append(W_theta_v2[idim][-1-ipoint])
+                reduced_W_lnprobs.append(W_lnprobs[-1-ipoint])
+                    
+        return Ndim,W_theta_v2,reduced_W_theta_v2,reduced_W_lnprobs
+
+    def theta_stats(reduced_W_theta_v2,val_analysis,Ndim):
+        """
         
+        """
+            
         if val_analysis == "HDR":
             bound_list = []
             val_list = []
@@ -2710,8 +2702,34 @@ if Part3:
             for idim in range(0,Ndim):
                 bound_list.append([(np.nan,np.nan)])
                 val_list.append([np.nan])
+                    
+        return val_list,bound_list
+
+
+
+    def P3_GRAPHS__BINF_ALPHAW3W4_W3_procedure(intructs_now,\
+            DATA_LBAND_now,W_lnprobs,W_theta,MAF):
+        """
+        This function does graphs and calculations for the bayesian 
+        inference performed in Part 2 for
+        alphaW3w4 and MW3 only. 
+        It does it for a specific star in our database.
+        It prints the results of emcee in an external file.
+        """
+        
+        ### 
+        figures_folder = "figures/"
+        val_analysis = "HDR"
+        
+        ### 
+        nburnin_fac = 0.3
+
+        Ndim,W_theta_v2,reduced_W_theta_v2,reduced_W_lnprobs = \
+                other_thetas(W_lnprobs,W_theta)
                 
-                
+        
+        val_list,bound_list = \
+                theta_stats(reduced_W_theta_v2,val_analysis,Ndim)
                         
         sys.exit()
         
