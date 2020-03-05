@@ -40,11 +40,12 @@ for ilinha in range(0,len(g0linhas)):
 ### Declaring the lists that will receive the different observables. 
 ### This is a preliminary step, before making the arrays for each observable.
 
-### The lists of observables of four model parameters
+### The lists of observables of 4 model parameters
+### (n, Sig, M, ob)
 TEMP_read = []
 SOURCE_read = []
 
-### The lists of observables of the four model parameters + cosi
+### The lists of observables of the 4 model parameters + cosi
 SNRATIOS_read = []
 ###    
 UBVRI_read = []
@@ -116,7 +117,8 @@ for ilinha in range(0,len(g0linhas)):
     
     def reading_procedure(lista,linename,Nelems):
         """
-        
+        This procedure attributes elements to 'lista', according to the 
+        chosen 'linename'.
         """
         ### Check if entering a new 'linename'. 
         if g0linhas[ilinha][0] == linename and COSI_key == 1:
@@ -129,6 +131,7 @@ for ilinha in range(0,len(g0linhas)):
             lista.append([auxi,auxi2])
         return 
 
+    ### 
     reading_procedure(SNRATIOS_read,"SNRATIOS",len(g0linhas[ilinha]))
     ###
     reading_procedure(UBVRI_read,"UBVRI",1+5)
@@ -244,20 +247,24 @@ LINE_HUMPHREY25 = attribution_procedure5(LINE_HUMPHREY25_read,5)
 ###
 BL_FLUX = attribution_procedure5(BL_FLUX_read,3)
 RL_FLUX = attribution_procedure5(RL_FLUX_read,3)
+
+### A few derived quantities:
 ### Obtaining alphaL
 ALPHAL = read_data.alphaL(BL_FLUX[:,:,:,:,:,0],\
             BL_FLUX[:,:,:,:,:,1],BL_FLUX[:,:,:,:,:,2],\
             RL_FLUX[:,:,:,:,:,0],\
             RL_FLUX[:,:,:,:,:,1],RL_FLUX[:,:,:,:,:,2])
+### 
+FBL_Vega = read_data.Vegaflux(3.41,3.47,Nnpts = 50)
+FRL_Vega = read_data.Vegaflux(3.93,4.00,Nnpts = 50)
+### 
+appBL = read_data.ap_mag_Menn(BL_FLUX[:,:,:,:,:,0],BL_FLUX[:,:,:,:,:,1],\
+            BL_FLUX[:,:,:,:,:,2],FBL_Vega)
+appRL = read_data.ap_mag_Menn(RL_FLUX[:,:,:,:,:,0],RL_FLUX[:,:,:,:,:,1],\
+            RL_FLUX[:,:,:,:,:,2],FRL_Vega)
 
 
-
-
-### TODO: attribution procedure for the TEMP_T 
-### (assuming that all TEMP_R are equal)
-### DONE!
-    
-
+### Attribution procedure for the TEMP_T (assuming that all TEMP_R are equal)
 def attribution_procedure4(lista_read,Nelems):
     """
     This function creates the 5-array associated with the 'lista_read' 
@@ -284,14 +291,9 @@ def attribution_procedure4(lista_read,Nelems):
                     
     return array
 
-
 ### 
 SOURCE = attribution_procedure4(SOURCE_read,5)
-
-
-
 ### TEMP_read.append([current_MODEL,current_TEMP_R,current_TEMP_T])
-
 TEMP_R_read = [[elem[0],elem[1]] for elem in TEMP_read]
 TEMP_T_read = [[elem[0],elem[2]] for elem in TEMP_read]
 
@@ -301,7 +303,7 @@ while np.isnan(float(elemm[0])) and np.isnan(float(elemm[1])) \
         and ielemm < len(TEMP_R_read):
     elemm = TEMP_R_read[ielemm][1]
     ielemm += 1
-    
+
 TEMP_R = np.array([float(x) for x in elemm])
 
 
@@ -1954,7 +1956,7 @@ if 1==2:
 ### Now, comes the part 2 of the analysis: MCMC bayesian inference for comparison 
 ### of models and observations.
 
-Part2 = True
+Part2 = False
 ### File containing the operations to be performed on the Be stars
 operations_on_stars = "operations_on_stars.inp"
 
@@ -2647,7 +2649,7 @@ if Part2:
 ### Now, comes the part 3 of the analysis: analysis of the results 
 ### of the operations performed on the stars.
 
-Part3 = False
+Part3 = True
 if Part3:
 
     def P3_GRAPHS__BINF_ALPHAW3W4_W3_procedure(intructs_now,\
@@ -2662,9 +2664,57 @@ if Part3:
         
         ### 
         figures_folder = "figures/"
+        val_analysis = "HDR"
         
         ### 
         nburnin_fac = 0.3
+        
+        
+        ### 
+        Ndim = len(W_theta[0])
+        W_theta_v2 = [[] for idim in range(0,Ndim)]
+        for elem in W_theta:
+            for idim in range(0,Ndim):
+                W_theta_v2[idim].append(elem[idim])
+        ### 
+        Nnew = np.nanmin([5000,int((1-nburnin_fac)*len(W_theta_v2[0]))])
+        reduced_W_theta_v2 = [[] for idim in range(0,Ndim)]
+        for ipoint in range(0,Nnew):
+            for idim in range(0,Ndim):
+                reduced_W_theta_v2[idim].append(W_theta_v2[idim][-1-ipoint])
+        
+        if val_analysis == "HDR":
+            bound_list = []
+            val_list = []
+            for idim in range(0,Ndim):
+                hpd, x, y, modes = read_data.hpd_grid(reduced_W_theta_v2[idim], \
+                        alpha=0.05, roundto=7)  
+                bound_list.append(hpd)
+                val_list.append(modes)
+                print(val_list[-1],bound_list[-1])
+        
+        elif val_analysis == "std":
+            bound_list = []
+            val_list = []
+            for idim in range(0,Ndim):
+                median = np.percentile(reduced_W_theta_v2[idim],50)
+                per84 = np.percentile(reduced_W_theta_v2[idim],84)
+                per16 = np.percentile(reduced_W_theta_v2[idim],16)
+                bound_list.append([(per16,per84)])
+                val_list.append([median])
+                print(val_list[-1],bound_list[-1])
+        
+        else:
+            bound_list = []
+            val_list = []        
+            for idim in range(0,Ndim):
+                bound_list.append([(np.nan,np.nan)])
+                val_list.append([np.nan])
+                
+                
+                        
+        sys.exit()
+        
     
         ### Turn this on to make a corner plot of the results.
         if 1==1:
@@ -2759,7 +2809,7 @@ if Part3:
     
             fig=plt.figure(figsize=(6,6))
             ax=plt.subplot(1,1,1)
-            plt.scatter(xx,yy,alpha=np.nanmax([0.1,2e-3]))
+            plt.scatter(xx,yy,alpha=0.1)
             plt.errorbar(obs_alpha34,obs_MW3,xerr=sig_alpha34,yerr=sig_MW3,\
                 color="black",linewidth=2.0)
             plt.xlabel("$\\alpha_{W3-W4}$")
@@ -2774,9 +2824,9 @@ if Part3:
 
         return
     
-    
-    
-    
+
+
+
     ### Getting instructions of operations to be applied to the data on
     ### Be stars.
     instructions = get_instructions(operations_on_stars)
