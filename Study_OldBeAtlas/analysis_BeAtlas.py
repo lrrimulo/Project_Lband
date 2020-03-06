@@ -572,7 +572,7 @@ def lnprior_only(theta,other):
 ### CORRECT this part to print the priors
 if 1==1:
     
-    prior_file = "prior_and_derivs.txt"
+    prior_file = "prior_and_derivs.out"
 
 
 
