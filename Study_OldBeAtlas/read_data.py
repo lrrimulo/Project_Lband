@@ -13,6 +13,32 @@ import pyhdust.spectools as spt
 
 
 
+### 
+def newlog10abs(x,B):
+    """
+    This function is defined for all x real.
+    It is a good approximation to log10(|x|), if |B*x| >> 1.
+    
+    Obs: This function explores the fact that 
+    arcsinh(B*x) ~ sign(B*x)*A*ln[2*|B*x|], when |B*x| >> 1.
+    """
+    ### A*np.arcsinh(B*x)-np.sign(B*x)*A*np.log(2.*abs(B*x)) = 0
+    ### A*np.arcsinh(B*x)-np.sign(B*x)*A*(np.log(2.*abs(B))+np.log(abs(x))) = 0
+    ### np.sign(B*x)*np.arcsinh(B*x)-np.log(2.*abs(B))=np.log(abs(x))
+    return np.arcsinh(abs(B*x))/np.log(10.)-np.log10(2.*abs(B))
+
+
+def err_frac(A,B,errA,errB):
+    """
+    Suppose you have a function y = A/B.
+    Then, its variance is given by 
+    sigy^2 = y^2(errA^2/A^2+errB^2/B^2)
+    
+    This function returns the standard deviation of the function y = A/B.
+    """
+    
+    return abs(A/B)*np.sqrt(errA*errA/A/A+errB*errB/B/B)
+    
 
 
 
@@ -1410,6 +1436,7 @@ def hpd_grid(sample, alpha=0.05, roundto=2):
     Calculate highest posterior density (HPD) of array for given alpha. 
     The HPD is the minimum width Bayesian credible interval (BCI). 
     The function works for multimodal distributions, returning more than one mode
+    
     Parameters
     ----------
     

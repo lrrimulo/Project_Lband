@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 ###########################
 
 ### Name of the output file, where the observables will be printed:
-outputfile = "observables_BeAtlas.txt"
+outputfile = "observables_BeAtlas.inp"
 
 
 ### Reading the fullsed, source and temperature files from the grid of 
