@@ -508,14 +508,13 @@ if 1==2:
 
 
 
-
 ### En esta parte se define la ThetaBig, poniendo los intervalos para cada parametro
 def thetabig(n,logSig,M,W,cosi):
    
     if 4.2 <= M <= 20. and \
             0. <= W <= 1. and \
             -np.inf <= logSig <= 0.6020599913279624 and \
-            2. <= n <= 4.5 and \
+            2. <= n <= 6.5 and \
             0. <= cosi <= 1.:
         return 1.
     else:
@@ -2422,9 +2421,9 @@ if Part2:
                             vals_alphaL_name,axis,\
                             vals_alphaL,\
                             tp,allow_extrapolation_fill,prints,overwrite = False)
-            ### filling the NaNs of MBL
-            vals_MW3_name = "vals_MBL"
-            vals_MW3 = fillingNaNs(folder_filledNaNs,\
+             ### filling the NaNs of MBL
+            vals_MBL_name = "vals_MBL"
+            vals_MBL = fillingNaNs(folder_filledNaNs,\
                             vals_MBL_name,axis,\
                             vals_MBL,\
                             tp,allow_extrapolation_fill,prints,overwrite = False)
@@ -2588,9 +2587,9 @@ if Part2:
                 Nchain = int(intructs_now[1][iinow][2])
                 folder_output = intructs_now[1][iinow][3]
                 suffix = intructs_now[1][iinow][4]
-                ### Hyperrectangular limits for the bayesian inference.
+                 ### Hyperrectangular limits for the bayesian inference.
                 binflims = [
-                        [3.0,4.5],
+                        [2.0,6.5],
                         [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
                         [4.2,14.6],
                         [1.2,1.4],
@@ -2684,7 +2683,7 @@ if Part3:
         ### Type of interpolation and "allowing extrapolation" for the 
         ### bayesian inference.
         tp = "linear"
-        allow_extrapolation = "no"
+        allow_extrapolation = "yes"
 
         ### The domain of the grids:
         npar, sigpar, Mpar, obpar, cosipar = read_everything.domain_PLgrid()

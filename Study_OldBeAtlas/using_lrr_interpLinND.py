@@ -269,8 +269,8 @@ if 1==1:
 
     if 1==1:
         
-        #new_values = lrr.fill_NaNs_interp(axis,values,tp,allow_extrapolation,prints)
-        new_values = lrr.fill_NaNs_interp(axis,values)
+        new_values = lrr.fill_NaNs_interp(axis,values,tp,allow_extrapolation,prints)
+        #new_values = lrr.fill_NaNs_interp(axis,values)
     
         for i in range(0,len(values)):
             print(values[i],new_values[i],values_ref[i])
