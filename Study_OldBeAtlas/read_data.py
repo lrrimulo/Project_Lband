@@ -2,7 +2,7 @@
 
 """
  
-
+from __future__ import division
 import numpy as np
 import glob as glob
 import pyhdust.lrr as lrr
@@ -30,6 +30,48 @@ def err_alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R,errB__L,errR__L):
     """
     return 1./np.log((lamb2R+lamb1R)/(lamb2B+lamb1B))*\
                 np.sqrt(errB__L**2./B__L**2.+errR__L**2./R__L**2.)
+
+
+
+def Vegaflux(lamb1,lamb2,Nnpts = 50):
+    """
+    
+    """
+    
+    ### Returns the SED of VEGA (9 nm - 160 microns):
+    ### * array of lambdas [Angstroms]
+    ### * array of Flambda [erg cm^-2 s^-1 A^-1]
+    xlp,ylp = lrr.VEGA_spct("spct1")
+    
+    ### vectors of lambda and dlambda in [Angstroms]:
+    llamb = np.array([lamb1+(lamb2-lamb1)/\
+        float(Nnpts-1)*float(i) for i in range(0,Nnpts)])*1e4
+    dllamb = np.array([llamb[i+1]-llamb[i] for i in range(0,Nnpts-1)])
+    
+
+    ylpf = np.array([lrr.interpLinND([llamb[i]],[xlp],ylp) \
+        for i in range(0,Nnpts)])
+    
+    ### Flux of Vega between 'lamb1' and 'lamb2'
+    return lrr.integrate_trapezia(ylpf,dllamb)  ### [erg s^-1 cm^-2]
+
+
+def ap_mag_Menn(flux,lamb1,lamb2,FVega):
+    """
+    
+    """
+    ### Apparent magnitudes B and R and error [mag]
+    return -2.5*np.log10(flux/(lamb2-lamb1)/FVega)
+
+def err_ap_mag_Menn(flux,errflux):
+    """
+    
+    """
+    ### Apparent magnitudes B and R and error [mag]
+    return 2.5/np.log(10.)*errflux/flux
+
+                        
+
 
 
 
@@ -572,6 +614,7 @@ def returnDATA_LBAND():
     lamb1_BL=3.41 ; lamb2_BL=3.47   ### limits of BL
     lamb1_RL=3.93 ; lamb2_RL=4.00   ### limits of RL
     Nnpts=50
+    
     ### Returns the SED of VEGA (9 nm - 160 microns):
     ### * array of lambdas [Angstroms]
     ### * array of Flambda [erg cm^-2 s^-1 A^-1]
@@ -1345,6 +1388,92 @@ def make_bigtables_obs(DATA_LBAND,fileNAME):
 
 
     return 
+
+
+
+
+
+
+
+
+
+
+
+def hpd_grid(sample, alpha=0.05, roundto=2):
+    """
+    This function was found in: 
+    https://github.com/PacktPublishing/Bayesian-Analysis-with-Python/blob/master/Chapter%201/hpd%20(1).py
+    
+    ............
+    ............
+    
+    Calculate highest posterior density (HPD) of array for given alpha. 
+    The HPD is the minimum width Bayesian credible interval (BCI). 
+    The function works for multimodal distributions, returning more than one mode
+    Parameters
+    ----------
+    
+    sample : Numpy array or python list
+        An array containing MCMC samples
+    alpha : float
+        Desired probability of type I error (defaults to 0.05)
+    roundto: integer
+        Number of digits after the decimal point for the results
+    Returns
+    ----------
+    hpd: array with the lower 
+          
+    """
+
+    import numpy as np
+    import scipy.stats.kde as kde
+
+    sample = np.asarray(sample)
+    sample = sample[~np.isnan(sample)]
+    ### get upper and lower bounds
+    l = np.min(sample)
+    u = np.max(sample)
+    density = kde.gaussian_kde(sample)
+    x = np.linspace(l, u, 2000)
+    y = density.evaluate(x)
+    ### y = density.evaluate(x, l, u) waitting for PR to be accepted
+    xy_zipped = zip(x, y/np.sum(y))
+    xy = sorted(xy_zipped, key=lambda x: x[1], reverse=True)
+    xy_cum_sum = 0
+    hdv = []
+    for val in xy:
+        xy_cum_sum += val[1]
+        hdv.append(val[0])
+        if xy_cum_sum >= (1-alpha):
+            break
+    hdv.sort()
+    diff = (u-l)/20  ### differences of 5%
+    hpd = []
+    hpd.append(round(min(hdv), roundto))
+    for i in range(1, len(hdv)):
+        if hdv[i]-hdv[i-1] >= diff:
+            hpd.append(round(hdv[i-1], roundto))
+            hpd.append(round(hdv[i], roundto))
+    hpd.append(round(max(hdv), roundto))
+    ite = iter(hpd)
+    hpd = list(zip(ite, ite))
+    modes = []
+    for value in hpd:
+         x_hpd = x[(x > value[0]) & (x < value[1])]
+         y_hpd = y[(x > value[0]) & (x < value[1])]
+         modes.append(round(x_hpd[np.argmax(y_hpd)], roundto))
+    return hpd, x, y, modes
+
+
+
+
+
+
+
+
+
+
+
 
 
 
