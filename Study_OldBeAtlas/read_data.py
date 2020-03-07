@@ -82,12 +82,12 @@ def Vegaflux(lamb1,lamb2,Nnpts = 50):
     return lrr.integrate_trapezia(ylpf,dllamb)  ### [erg s^-1 cm^-2]
 
 
-def ap_mag_Menn(flux,lamb1,lamb2,FVega):
+def ap_mag_Menn(flux,FVega):
     """
     
     """
     ### Apparent magnitudes B and R and error [mag]
-    return -2.5*np.log10(flux/(lamb2-lamb1)/FVega)
+    return -2.5*np.log10(flux/FVega)
 
 def err_ap_mag_Menn(flux,errflux):
     """

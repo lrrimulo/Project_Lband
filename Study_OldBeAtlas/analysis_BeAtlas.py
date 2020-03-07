@@ -210,12 +210,12 @@ def attribution_procedure5(lista_read,Nelems):
     
     
     
-
+### 
 if len(SNRATIOS_read) > 0:
     SNRATIOS = attribution_procedure5(SNRATIOS_read,len(SNRATIOS_read[0][1]))
 else:
     SNRATIOS = attribution_procedure5(SNRATIOS_read,0)
-
+### 
 UBVRI = attribution_procedure5(UBVRI_read,5)
 JHK = attribution_procedure5(JHK_read,3)
 HALPHA_SOAR = attribution_procedure5(HALPHA_SOAR_read,1)
@@ -258,10 +258,8 @@ ALPHAL = read_data.alphaL(BL_FLUX[:,:,:,:,:,0],\
 FBL_Vega = read_data.Vegaflux(3.41,3.47,Nnpts = 50)
 FRL_Vega = read_data.Vegaflux(3.93,4.00,Nnpts = 50)
 ### 
-appBL = read_data.ap_mag_Menn(BL_FLUX[:,:,:,:,:,0],BL_FLUX[:,:,:,:,:,1],\
-            BL_FLUX[:,:,:,:,:,2],FBL_Vega)
-appRL = read_data.ap_mag_Menn(RL_FLUX[:,:,:,:,:,0],RL_FLUX[:,:,:,:,:,1],\
-            RL_FLUX[:,:,:,:,:,2],FRL_Vega)
+MBL = read_data.ap_mag_Menn(BL_FLUX[:,:,:,:,:,0],FBL_Vega)
+MRL = read_data.ap_mag_Menn(RL_FLUX[:,:,:,:,:,0],FRL_Vega)
 
 
 ### Attribution procedure for the TEMP_T (assuming that all TEMP_R are equal)
@@ -508,17 +506,6 @@ def thetabig(n,logSig,M,W,cosi):
     else:
         return 0
 
-def thetabig_only(n,logSig,M,W,cosi):
-   
-    if 1. <= M <= 20. and \
-            0. <= W <= 1. and \
-            -2. <= logSig <= 0.6020599913279624 and \
-            1. <= n <= 7. and \
-            0. <= cosi <= 1.:
-        return 1
-    else:
-        return 0
-
 
 ### Se define la funcion Prior
 def lnprior(theta,other):
@@ -544,43 +531,62 @@ def lnprior(theta,other):
         fbe = fBe(M,1.)
         return -2.3*np.log(M) + np.log(fbe) \
                     - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
-                    
-def lnprior_only(theta,other):
-   
 
 
-    ### Se definen los parametros de la Prior
-    n = theta[0]
-    logSig = theta[1]
-    M = theta[2]
-    W = np.sqrt(2.*(theta[3]-1.))
-    cosi = theta[4]
-   
 
-   
-    thetab = thetabig_only(n,logSig,M,W,cosi)
-   
-    if thetab == 0:
-        return -np.inf
-    else:
-        mean_W = other[0]
-        std_W = other[1]
-        fbe = fBe(M,1.)
-        return -2.3*np.log(M) + np.log(fbe) \
-                    - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
-
-### CORRECT this part to print the priors
-if 1==1:
+###########
+### Uncheck this to generate output file with the prior distribution and 
+### some derived quantities:
+if 1==2:
     
+    ### Output file containing the walkers and derived quantities for 
+    ### the prior:
     prior_file = "prior_and_derivs.out"
 
 
-
-    #Importamos Emcee
     ndim = 5
+    ### Good values for emcee:
     nwalkers = 500
-    Nchain = 400
-    nburnin = 100
+    Nchain = 1300
+    nburnin = 300
+
+
+    ### 
+    def thetabig_only(n,logSig,M,W,cosi):
+   
+        if 1. <= M <= 20. and \
+                0. <= W <= 1. and \
+                -2. <= logSig <= 0.6020599913279624 and \
+                1. <= n <= 7. and \
+                0. <= cosi <= 1.:
+            return 1
+        else:
+            return 0
+
+    ### 
+    def lnprior_only(theta,other):
+   
+
+
+        ### Se definen los parametros de la Prior
+        n = theta[0]
+        logSig = theta[1]
+        M = theta[2]
+        W = np.sqrt(2.*(theta[3]-1.))
+        cosi = theta[4]
+   
+
+   
+        thetab = thetabig_only(n,logSig,M,W,cosi)
+   
+        if thetab == 0:
+            return -np.inf
+        else:
+            mean_W = other[0]
+            std_W = other[1]
+            fbe = fBe(M,1.)
+            return -2.3*np.log(M) + np.log(fbe) \
+                        - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
 
 
     #means = np.random.rand(ndim)
@@ -605,9 +611,10 @@ if 1==1:
             for idim in range(0,len(thetalims))]) for i in range(nwalkers)]
     
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprior_only,args=[means])
-
+    
+    print("Sampling prior...")
     state = sampler.run_mcmc(p0, Nchain)
-
+    print("Sampling DONE.")
 
 
 
@@ -672,7 +679,7 @@ if 1==1:
                         vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
                         vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
                         vals_alphaL.append(ALPHAL[i1,i2,i3,i4,i5])
-                        vals_MBL.append(appBL[i1,i2,i3,i4,i5])
+                        vals_MBL.append(MBL[i1,i2,i3,i4,i5])
                         vals_len_x.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0]/\
                                 LINE_PFGAMMA[i1,i2,i3,i4,i5,0])
                         vals_len_y.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0]/\
@@ -742,25 +749,64 @@ if 1==1:
 
     lnprobs = []
     n_print = []; Sig_print = []; M_print = []; ob_print = []; cosi_print = []
-    for ichain in range(nburnin,len(sampler.chain)):
-        for iwalker in range(0,len(sampler.chain[0])):
+    points = []
+    for ichain in range(nburnin,len(sampler.chain[:][0])):
+        for iwalker in range(0,len(sampler.chain)):
             ### 
-            point = sampler.chain[ichain][iwalker]
+            point = sampler.chain[iwalker][ichain]
+            points.append(point)
             ### 
-            lnprobs.append(sampler.lnprobability[ichain][iwalker])
+            lnprobs.append(sampler.lnprobability[iwalker][ichain])
             n_print.append(point[0])
             Sig_print.append(point[1])
             M_print.append(point[2])
             ob_print.append(point[3])
             cosi_print.append(point[4])
-
-
+    
+    allow_extrapolation = "no"
+    
+    print("Evaluating alphaW3W4...")
+    alphaW3W4_print = []
+    [alphaW3W4_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_alphaW3W4,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    print("Evaluating MW3...")
+    MW3_print = []
+    [MW3_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_MW3,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    print("Evaluating alphaL...")
+    alphaL_print = []
+    [alphaL_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_alphaL,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    print("Evaluating MBL...")
+    MBL_print = []
+    [MBL_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_MBL,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    print("Evaluating len_x...")
+    len_x_print = []
+    [len_x_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_len_x,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    print("Evaluating len_y...")
+    len_y_print = []
+    [len_y_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_len_y,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    print("Evaluating len_z...")
+    len_z_print = []
+    [len_z_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_len_z,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
             
             
             
             
 
     fp = open(prior_file,"w")
+
     fp.write("LNPROB")
     [fp.write(" "+str(lnprobs[iline])) for iline in range(0,len(lnprobs))]
     fp.write("\n")
@@ -779,9 +825,38 @@ if 1==1:
     fp.write("THETA_4")
     [fp.write(" "+str(cosi_print[iline])) for iline in range(0,len(cosi_print))]
     fp.write("\n")
-
+    
+    fp.write("ALPHAW3W4")
+    [fp.write(" "+str(alphaW3W4_print[iline])) \
+            for iline in range(0,len(alphaW3W4_print))]
+    fp.write("\n")
+    fp.write("MW3")
+    [fp.write(" "+str(MW3_print[iline])) \
+            for iline in range(0,len(MW3_print))]
+    fp.write("\n")
+    fp.write("ALPHAL")
+    [fp.write(" "+str(alphaL_print[iline])) \
+            for iline in range(0,len(alphaL_print))]
+    fp.write("\n")
+    fp.write("MBL")
+    [fp.write(" "+str(MBL_print[iline])) \
+            for iline in range(0,len(MBL_print))]
+    fp.write("\n")
+    fp.write("LENORZER_X")
+    [fp.write(" "+str(len_x_print[iline])) \
+            for iline in range(0,len(len_x_print))]
+    fp.write("\n")
+    fp.write("LENORZER_Y")
+    [fp.write(" "+str(len_y_print[iline])) \
+            for iline in range(0,len(len_y_print))]
+    fp.write("\n")
+    fp.write("LENORZER_Z")
+    [fp.write(" "+str(len_z_print[iline])) \
+            for iline in range(0,len(len_z_print))]
+    fp.write("\n")
 
     fp.close()
+
     sys.exit()
 
 
@@ -803,8 +878,55 @@ if 1==1:
 ### Directory for the figures:
 figures = "Figures/"
 
+    
+    
+
 
 if 1==2:
+
+
+    ### Output file containing the walkers and derived quantities for 
+    ### the prior:
+    prior_file = "prior_and_derivs.out"
+    
+    fp = open(prior_file,"r")
+    linesprior = fp.readlines()
+    fp.close()
+    
+    linesprior = [x.split() for x in linesprior]
+
+    Nprior = np.nanmin([5000,len(linesprior[0])-1])
+
+    ###     
+    for iline in range(0,len(linesprior)):
+        if linesprior[iline][0] == "ALPHAL":
+            idx_alphaL = iline
+        if linesprior[iline][0] == "MBL":
+            idx_MBL = iline
+        if linesprior[iline][0] == "ALPHAW3W4":
+            idx_alphaW3W4 = iline
+        if linesprior[iline][0] == "MW3":
+            idx_MW3 = iline
+    ### 
+    Wal_alphaL = []
+    Wal_MBL = []
+    Wal_alphaW3W4 = []
+    Wal_MW3 = []
+    el_count = 1
+    i = 1
+    while el_count <= Nprior and i < len(linesprior[iline]):
+        if not np.isnan(float(linesprior[idx_alphaL][i])) \
+                and not np.isnan(float(linesprior[idx_MBL][i])) \
+                and not np.isnan(float(linesprior[idx_alphaW3W4][i])) \
+                and not np.isnan(float(linesprior[idx_MW3][i])):
+            Wal_alphaL.append(float(linesprior[idx_alphaL][i]))
+            Wal_MBL.append(float(linesprior[idx_MBL][i]))
+            Wal_alphaW3W4.append(float(linesprior[idx_alphaW3W4][i]))
+            Wal_MW3.append(float(linesprior[idx_MW3][i]))
+            el_count += 1
+        i += 1    
+        
+
 
     names = []
     alphaL = []
@@ -838,60 +960,69 @@ if 1==2:
         erralphaW3W4.append(DATA_LBAND[ifile][6][4][1])
 
 
-    plt.figure(figsize=(11,11))
-    plt.subplot(221)
-    for i in range(0,len(DATA_LBAND)):
-        plt.errorbar(alphaL[i],BL[i],xerr=erralphaL[i],yerr=errMW3[i],color="red",\
-            linewidth=0.5)
-        plt.annotate("HD "+names[i],[alphaL[i],BL[i]])
-        plt.xlabel("$\\alpha_L$")
-        plt.ylabel("$M_{B_L}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
-    plt.subplot(222)
-    for i in range(0,len(DATA_LBAND)):
-        plt.errorbar(alphaW1W2[i],MW3[i],xerr=erralphaW1W2[i],yerr=errMW3[i],color="green",\
-            linewidth=0.5)
-        plt.annotate("HD "+names[i],[alphaW1W2[i],MW3[i]])
-        plt.xlabel("$\\alpha_{W1-W2}$")
-        plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
-    plt.subplot(223)
-    for i in range(0,len(DATA_LBAND)):
-        plt.errorbar(alphaW2W3[i],MW3[i],xerr=erralphaW2W3[i],yerr=errMW3[i],color="blue",\
-            linewidth=0.5)
-        plt.annotate("HD "+names[i],[alphaW2W3[i],MW3[i]])
-        plt.xlabel("$\\alpha_{W2-W3}$")
-        plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
-    plt.subplot(224)
-    for i in range(0,len(DATA_LBAND)):
-        plt.errorbar(alphaW3W4[i],MW3[i],xerr=erralphaW3W4[i],yerr=errMW3[i],color="purple",\
-            linewidth=0.5)
-        plt.annotate("HD "+names[i],[alphaW3W4[i],MW3[i]])
-        plt.xlabel("$\\alpha_{W3-W4}$")
-        plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
-    plt.tight_layout()
-    plt.show()
+    #plt.figure(figsize=(11,11))
+    #plt.subplot(221)
+    #for i in range(0,len(DATA_LBAND)):
+    #    plt.errorbar(alphaL[i],BL[i],xerr=erralphaL[i],yerr=errMW3[i],color="red",\
+    #        linewidth=0.5)
+    #    plt.annotate("HD "+names[i],[alphaL[i],BL[i]])
+    #    plt.xlabel("$\\alpha_L$")
+    #    plt.ylabel("$M_{B_L}\,\mathrm{[mag]}$")
+    #    plt.xlim([-5.,1.6])
+    #    plt.ylim([0.,-7.])
+    #plt.subplot(222)
+    #for i in range(0,len(DATA_LBAND)):
+    #    plt.errorbar(alphaW1W2[i],MW3[i],xerr=erralphaW1W2[i],yerr=errMW3[i],color="green",\
+    #        linewidth=0.5)
+    #    plt.annotate("HD "+names[i],[alphaW1W2[i],MW3[i]])
+    #    plt.xlabel("$\\alpha_{W1-W2}$")
+    #    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+    #    plt.xlim([-5.,1.6])
+    #    plt.ylim([0.,-7.])
+    #plt.subplot(223)
+    #for i in range(0,len(DATA_LBAND)):
+    #    plt.errorbar(alphaW2W3[i],MW3[i],xerr=erralphaW2W3[i],yerr=errMW3[i],color="blue",\
+    #        linewidth=0.5)
+    #    plt.annotate("HD "+names[i],[alphaW2W3[i],MW3[i]])
+    #    plt.xlabel("$\\alpha_{W2-W3}$")
+    #    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+    #    plt.xlim([-5.,1.6])
+    #    plt.ylim([0.,-7.])
+    #plt.subplot(224)
+    #for i in range(0,len(DATA_LBAND)):
+    #    plt.errorbar(alphaW3W4[i],MW3[i],xerr=erralphaW3W4[i],yerr=errMW3[i],color="purple",\
+    #        linewidth=0.5)
+    #    plt.annotate("HD "+names[i],[alphaW3W4[i],MW3[i]])
+    #    plt.xlabel("$\\alpha_{W3-W4}$")
+    #    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+    #    plt.xlim([-5.,1.6])
+    #    plt.ylim([0.,-7.])
+    #plt.tight_layout()
+    #plt.show()
 
 
 
 
     plt.figure(figsize=(11,8))
+    ### 
     plt.subplot(121)
+    ### 
+    plt.scatter(Wal_alphaL,Wal_MBL,alpha=0.1)
+    ### 
     for i in range(0,len(DATA_LBAND)):
         plt.errorbar(alphaL[i],BL[i],xerr=erralphaL[i],yerr=errMW3[i],color="red",\
             linewidth=2.)
         plt.annotate("HD "+names[i],[alphaL[i],BL[i]],size=7.)
-        plt.xlabel("$\\alpha_L$")
-        plt.ylabel("$M_{B_L}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
+    ### 
+    plt.xlabel("$\\alpha_L$")
+    plt.ylabel("$M_{B_L}\,\mathrm{[mag]}$")
+    plt.xlim([-5.,1.6])
+    plt.ylim([0.,-7.])
+    ### 
     plt.subplot(122)
+    ### 
+    plt.scatter(Wal_alphaW3W4,Wal_MW3,alpha=0.1)
+    ### 
     for i in range(0,len(DATA_LBAND)):
         varx = [alphaW1W2[i],alphaW2W3[i],alphaW3W4[i]]
         plt.plot([np.nanmin(varx),np.nanmax(varx)],[MW3[i],MW3[i]],\
@@ -908,10 +1039,12 @@ if 1==2:
             plt.annotate("HD "+names[i],[alphaW2W3[i],MW3[i]],size=7.)
         else:
             plt.annotate("HD "+names[i],[alphaW3W4[i],MW3[i]],size=7.)
-        plt.xlabel("$\\alpha$")
-        plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-        plt.xlim([-5.,1.6])
-        plt.ylim([0.,-7.])
+    ### 
+    plt.xlabel("$\\alpha$")
+    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
+    plt.xlim([-5.,1.6])
+    plt.ylim([0.,-7.])
+    ### 
     plt.tight_layout()
     plt.show()
     
