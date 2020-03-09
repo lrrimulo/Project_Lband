@@ -600,9 +600,9 @@ if 1==2:
     ### Choose an initial set of positions for the walkers.
     ### (It is a list of ndim-dimensional arrays.)
     thetalims = [\
-                [1.,7.],\
+                [3.,4.5],\
                 [read_data.newlog10abs(0.02,1e5),read_data.newlog10abs(4.,1e5)],\
-                [1.,20.],\
+                [4.2,20.],\
                 [1.,1.5],\
                 [0.,1.]\
                 ]
@@ -687,7 +687,7 @@ if 1==2:
                         vals_len_z.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0]/\
                                 (BL_FLUX[i1,i2,i3,i4,i5,0]/\
                                 (BL_FLUX[i1,i2,i3,i4,i5,2]-\
-                                BL_FLUX[i1,i2,i3,i4,i5,1])*1e4)
+                                BL_FLUX[i1,i2,i3,i4,i5,1])*1e-4)
                                 )
     
     ### Turn this on to fill the NaNs in the values (probably due to 
@@ -927,7 +927,7 @@ if 1==2:
         i += 1    
         
 
-
+    ### 
     names = []
     alphaL = []
     erralphaL = []
@@ -958,48 +958,6 @@ if 1==2:
         erralphaW2W3.append(DATA_LBAND[ifile][6][3][1])
         alphaW3W4.append(DATA_LBAND[ifile][6][4][0])
         erralphaW3W4.append(DATA_LBAND[ifile][6][4][1])
-
-
-    #plt.figure(figsize=(11,11))
-    #plt.subplot(221)
-    #for i in range(0,len(DATA_LBAND)):
-    #    plt.errorbar(alphaL[i],BL[i],xerr=erralphaL[i],yerr=errMW3[i],color="red",\
-    #        linewidth=0.5)
-    #    plt.annotate("HD "+names[i],[alphaL[i],BL[i]])
-    #    plt.xlabel("$\\alpha_L$")
-    #    plt.ylabel("$M_{B_L}\,\mathrm{[mag]}$")
-    #    plt.xlim([-5.,1.6])
-    #    plt.ylim([0.,-7.])
-    #plt.subplot(222)
-    #for i in range(0,len(DATA_LBAND)):
-    #    plt.errorbar(alphaW1W2[i],MW3[i],xerr=erralphaW1W2[i],yerr=errMW3[i],color="green",\
-    #        linewidth=0.5)
-    #    plt.annotate("HD "+names[i],[alphaW1W2[i],MW3[i]])
-    #    plt.xlabel("$\\alpha_{W1-W2}$")
-    #    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-    #    plt.xlim([-5.,1.6])
-    #    plt.ylim([0.,-7.])
-    #plt.subplot(223)
-    #for i in range(0,len(DATA_LBAND)):
-    #    plt.errorbar(alphaW2W3[i],MW3[i],xerr=erralphaW2W3[i],yerr=errMW3[i],color="blue",\
-    #        linewidth=0.5)
-    #    plt.annotate("HD "+names[i],[alphaW2W3[i],MW3[i]])
-    #    plt.xlabel("$\\alpha_{W2-W3}$")
-    #    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-    #    plt.xlim([-5.,1.6])
-    #    plt.ylim([0.,-7.])
-    #plt.subplot(224)
-    #for i in range(0,len(DATA_LBAND)):
-    #    plt.errorbar(alphaW3W4[i],MW3[i],xerr=erralphaW3W4[i],yerr=errMW3[i],color="purple",\
-    #        linewidth=0.5)
-    #    plt.annotate("HD "+names[i],[alphaW3W4[i],MW3[i]])
-    #    plt.xlabel("$\\alpha_{W3-W4}$")
-    #    plt.ylabel("$M_{W3}\,\mathrm{[mag]}$")
-    #    plt.xlim([-5.,1.6])
-    #    plt.ylim([0.,-7.])
-    #plt.tight_layout()
-    #plt.show()
-
 
 
 
@@ -1067,7 +1025,50 @@ if 1==2:
 
 #############################
 ### Plotting observed Lenorzer Diagrams
-if 1==2:
+if 1==1:
+    
+    
+    
+    ### Output file containing the walkers and derived quantities for 
+    ### the prior:
+    prior_file = "prior_and_derivs.out"
+    ### 
+    fp = open(prior_file,"r")
+    linesprior = fp.readlines()
+    fp.close()
+    linesprior = [x.split() for x in linesprior]
+    ### 
+    Nprior = np.nanmin([5000,len(linesprior[0])-1])
+    
+    ### 
+    for iline in range(0,len(linesprior)):
+        if linesprior[iline][0] == "LENORZER_X":
+            idx_len_x = iline
+        if linesprior[iline][0] == "LENORZER_Y":
+            idx_len_y = iline
+        if linesprior[iline][0] == "LENORZER_Z":
+            idx_len_z = iline
+    ### 
+    Wal_len_x = []
+    Wal_len_y = []
+    Wal_len_z = []
+    el_count = 1
+    i = 1
+    while el_count <= Nprior and i < len(linesprior[iline]):
+        if not np.isnan(float(linesprior[idx_len_x][i])) \
+                and not np.isnan(float(linesprior[idx_len_y][i])) \
+                and not np.isnan(float(linesprior[idx_len_z][i])):
+            Wal_len_x.append(float(linesprior[idx_len_x][i]))
+            Wal_len_y.append(float(linesprior[idx_len_y][i]))
+            Wal_len_z.append(float(linesprior[idx_len_z][i]))
+            el_count += 1
+        i += 1    
+    
+    
+    
+    
+    
+    
 
     ### Parameters for the double arcsinh scaling:
     up1 = 1.
@@ -1086,6 +1087,7 @@ if 1==2:
     errH14BL = []
     for ifile in range(0,len(DATA_LBAND)):
         names.append(DATA_LBAND[ifile][0])
+        
         XL.append(fluxhumphreys[ifile,14,0]/fluxPfg[ifile,0])
         YL.append(fluxhumphreys[ifile,14,0]/fluxBra[ifile,0])
         H14BL.append(fluxhumphreys[ifile,14,0]/DATA_LBAND[ifile][5][0][0]*\
@@ -1133,6 +1135,12 @@ if 1==2:
     errYLplot=np.array([abs(lrr.scale_two_arcsinh(YL[i],up1,up2,down1,down2,\
         m="deriv"))*errYL[i] for i in range(0,len(errYL))])
 
+    ### 
+    Wal_len_x_plot = [lrr.scale_two_arcsinh(Wal_len_x[i],up1,up2,down1,down2) \
+        for i in range(0,len(Wal_len_x))]
+    Wal_len_y_plot = [lrr.scale_two_arcsinh(Wal_len_y[i],up1,up2,down1,down2) \
+        for i in range(0,len(Wal_len_x))]
+        
 
     ### 
     plt.figure(1,figsize=(11,11), dpi=100)
@@ -1156,13 +1164,20 @@ if 1==2:
             up1,up2,down1,down2)],linestyle=":",color="blue",\
         linewidth=0.5)  ### Horizontal line delimiting "type 1 region"
     
+    for i in xrange(0,len(Wal_len_x_plot)):
+        if Wal_len_z[i] >= 0.:
+            markk="o"
+        else:
+            markk="^"    
+        plt.scatter([Wal_len_x_plot[i]],[Wal_len_y_plot[i]],marker=markk,\
+                s=1e4*(np.abs(Wal_len_z[i]))/0.06e4,\
+                color="cyan",facecolors="None",alpha=0.1)
     
     for i in xrange(0,len(XLplot)):
         if H14BL[i] >= 0.:
             markk="o"
         else:
             markk="^"
-        #if ~np.isnan(XL[i]) and ~np.isnan(YL[i]):
         plt.scatter([XLplot[i]],[YLplot[i]],marker=markk,\
                 s=1e4*(np.abs(H14BL[i])+np.abs(errH14BL[i]))/0.06e4,\
                 color="blue",facecolors="None")
@@ -1248,60 +1263,63 @@ if 1==2:
     i_cosi = cosipar.index("1.0")
     
     ###
-    #kinit = 1
-    #colorvec=[  "gray","black","brown","red","orange","green","blue","purple"]
-    #for iplot1 in range(0,len(sigpar)):
-    #    auxi_XL=[]
-    #    auxi_YL=[]
-    #    auxi_H14BL=[]
-    #    auxi_annotate_vec=[]
-    #    for iplot2 in range(0,len(cosipar)):
-    #        auxi_XL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
-    #            LINE_PFGAMMA[i_n,iplot1,i_M,i_ob,iplot2,0])
-    #        auxi_YL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
-    #            LINE_BRALPHA[i_n,iplot1,i_M,i_ob,iplot2,0])
-    #        auxi_H14BL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
-    #            BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]*\
-    #                   (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
-    #                   BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1])*1e4)
-    #        auxi_annotate_vec.append("$\cos i$ = "+\
-    #                str(round(abs(float(cosipar[iplot2])),2)))
-    #    XL.append(auxi_XL)
-    #    YL.append(auxi_YL)
-    #    H14BL.append(auxi_H14BL)
-    #    annotate_vec.append(auxi_annotate_vec)
-    #    figname.append("n{0}_sig{1}_M{2}_ob{3}_cosi_X.png".format(\
-    #        npar[i_n],sigpar[iplot1],Mpar[i_M],obpar[i_ob]))
-    #    figtitle.append("$n="+npar[i_n]+"$, $\Sigma_0="+sigpar[iplot1]+\
-    #        "\,\mathrm{g\,cm^{-2}}$")
+    if 1==2:
+        kinit = 1
+        colorvec=[  "gray","black","brown","red","orange","green","blue","purple"]
+        for iplot1 in range(0,len(sigpar)):
+            auxi_XL=[]
+            auxi_YL=[]
+            auxi_H14BL=[]
+            auxi_annotate_vec=[]
+            for iplot2 in range(0,len(cosipar)):
+                auxi_XL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
+                    LINE_PFGAMMA[i_n,iplot1,i_M,i_ob,iplot2,0])
+                auxi_YL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
+                    LINE_BRALPHA[i_n,iplot1,i_M,i_ob,iplot2,0])
+                auxi_H14BL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
+                    BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]*\
+                           (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
+                           BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1])*1e4)
+                auxi_annotate_vec.append("$\cos i$ = "+\
+                        str(round(abs(float(cosipar[iplot2])),2)))
+            XL.append(auxi_XL)
+            YL.append(auxi_YL)
+            H14BL.append(auxi_H14BL)
+            annotate_vec.append(auxi_annotate_vec)
+            figname.append("n{0}_sig{1}_M{2}_ob{3}_cosi_X.png".format(\
+                npar[i_n],sigpar[iplot1],Mpar[i_M],obpar[i_ob]))
+            figtitle.append("$n="+npar[i_n]+"$, $\Sigma_0="+sigpar[iplot1]+\
+                "\,\mathrm{g\,cm^{-2}}$")
 
     ###
-    kinit = 0
-    colorvec=["black","black","black","black","black","black","black",\
-                    "black","black","black"]
-    for iplot2 in range(0,len(cosipar)):
-        auxi_XL=[]
-        auxi_YL=[]
-        auxi_H14BL=[]
-        auxi_annotate_vec=[]
-        for iplot1 in range(0,len(sigpar)):
-            auxi_XL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
-                LINE_PFGAMMA[i_n,iplot1,i_M,i_ob,iplot2,0])
-            auxi_YL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
-                LINE_BRALPHA[i_n,iplot1,i_M,i_ob,iplot2,0])
-            auxi_H14BL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
-                BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]*\
-                        (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
-                        BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1])*1e4)
-            auxi_annotate_vec.append("$\Sigma_0$ = "+sigpar[iplot1])
-        XL.append(auxi_XL)
-        YL.append(auxi_YL)
-        H14BL.append(auxi_H14BL)
-        annotate_vec.append(auxi_annotate_vec)
-        figname.append("n{0}_sigX.XX_M{1}_ob{2}_cosi_{3}.png".format(\
-            npar[i_n],Mpar[i_M],obpar[i_ob],str(round(abs(float(cosipar[iplot2])),2)) ))
-        figtitle.append("$n="+npar[i_n]+"$, $\cos i = "+\
-                    str(round(abs(float(cosipar[iplot2])),2))+"$")
+    if 1==1:
+        kinit = 0
+        colorvec=["black","black","black","black","black","black","black",\
+                        "black","black","black"]
+        for iplot2 in range(0,len(cosipar)):
+            auxi_XL=[]
+            auxi_YL=[]
+            auxi_H14BL=[]
+            auxi_annotate_vec=[]
+            for iplot1 in range(0,len(sigpar)):
+                auxi_XL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
+                    LINE_PFGAMMA[i_n,iplot1,i_M,i_ob,iplot2,0])
+                auxi_YL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
+                    LINE_BRALPHA[i_n,iplot1,i_M,i_ob,iplot2,0])
+                auxi_H14BL.append(LINE_HUMPHREY14[i_n,iplot1,i_M,i_ob,iplot2,0]/\
+                    BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,0]*\
+                            (BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,2]-\
+                            BL_FLUX[i_n,iplot1,i_M,i_ob,iplot2,1])*1e4)
+                auxi_annotate_vec.append("$\Sigma_0$ = "+sigpar[iplot1])
+            XL.append(auxi_XL)
+            YL.append(auxi_YL)
+            H14BL.append(auxi_H14BL)
+            annotate_vec.append(auxi_annotate_vec)
+            figname.append("n{0}_sigX.XX_M{1}_ob{2}_cosi_{3}.png".format(\
+                npar[i_n],Mpar[i_M],obpar[i_ob],\
+                str(round(abs(float(cosipar[iplot2])),2)) ))
+            figtitle.append("$n="+npar[i_n]+"$, $\cos i = "+\
+                        str(round(abs(float(cosipar[iplot2])),2))+"$")
 
 
     ### 
@@ -3247,6 +3265,12 @@ if Part3:
             fig.savefig(intructs_now[1][iinstr][1]+figures_folder+\
                     "CMDWISE__"+DATA_LBAND_now[0]+"__"+\
                     intructs_now[1][iinstr][2]+".png")
+
+
+
+
+
+
 
 
 

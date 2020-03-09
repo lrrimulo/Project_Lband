@@ -637,8 +637,8 @@ def returnDATA_LBAND():
     fBR.close()
 
 
-    lamb1_BL=3.41 ; lamb2_BL=3.47   ### limits of BL
-    lamb1_RL=3.93 ; lamb2_RL=4.00   ### limits of RL
+    lamb1_BL=3.41 ; lamb2_BL=3.47   ### limits of BL [microns]
+    lamb1_RL=3.93 ; lamb2_RL=4.00   ### limits of RL [microns]
     Nnpts=50
     
     ### Returns the SED of VEGA (9 nm - 160 microns):
@@ -674,7 +674,7 @@ def returnDATA_LBAND():
             if lines[iline].split()[0] == "Obj.":
                 for iobj in range(1,len(lines[iline].split())):
                     if lines[iline].split()[iobj] == Cesar_BR_correspond[icor]:
-                    
+                        
                         lamb2B = float(lines[iline+1].split()[iobj]) ### [Angs]
                         lamb1B = float(lines[iline+2].split()[iobj]) ### [Angs]
                         B__L = float(lines[iline+3].split()[iobj])
@@ -823,30 +823,30 @@ def returnDATA_LBAND():
 
                     ### Obtaining alphas and errors associated with each color:
                     if not np.isnan(W1now-W2now):
-                        alphaW1W2now = lrr.interpLinND([W1now-W2now],[colorW1W2],\
-                            alphavec,allow_extrapolation="no")
-                        erralphaW1W2now = lrr.interpLinND([W1now-W2now],[colorW1W2],\
-                            err_facW1W2,allow_extrapolation="no")*\
+                        alphaW1W2now = lrr.interpLinND([W1now-W2now],\
+                            [colorW1W2],alphavec,allow_extrapolation="no")
+                        erralphaW1W2now = lrr.interpLinND([W1now-W2now],\
+                            [colorW1W2],err_facW1W2,allow_extrapolation="no")*\
                             np.sqrt(errW1now**2.+errW2now**2.)
                     else:
                         alphaW1W2now = np.nan
                         erralphaW1W2now = np.nan
                     
                     if not np.isnan(W2now-W3now):
-                        alphaW2W3now = lrr.interpLinND([W2now-W3now],[colorW2W3],\
-                            alphavec,allow_extrapolation="no")
-                        erralphaW2W3now = lrr.interpLinND([W2now-W3now],[colorW2W3],\
-                            err_facW2W3,allow_extrapolation="no")*\
+                        alphaW2W3now = lrr.interpLinND([W2now-W3now],\
+                            [colorW2W3],alphavec,allow_extrapolation="no")
+                        erralphaW2W3now = lrr.interpLinND([W2now-W3now],\
+                            [colorW2W3],err_facW2W3,allow_extrapolation="no")*\
                             np.sqrt(errW2now**2.+errW3now**2.)
                     else:
                         alphaW2W3now = np.nan
                         erralphaW2W3now = np.nan
                     
                     if not np.isnan(W3now-W4now):
-                        alphaW3W4now = lrr.interpLinND([W3now-W4now],[colorW3W4],\
-                            alphavec,allow_extrapolation="no")
-                        erralphaW3W4now = lrr.interpLinND([W3now-W4now],[colorW3W4],\
-                            err_facW3W4,allow_extrapolation="no")*\
+                        alphaW3W4now = lrr.interpLinND([W3now-W4now],\
+                            [colorW3W4],alphavec,allow_extrapolation="no")
+                        erralphaW3W4now = lrr.interpLinND([W3now-W4now],\
+                            [colorW3W4],err_facW3W4,allow_extrapolation="no")*\
                             np.sqrt(errW3now**2.+errW4now**2.)
                     else:
                         alphaW3W4now = np.nan
@@ -864,17 +864,22 @@ def returnDATA_LBAND():
                                                  
                     ### Distance modulus and error [mag]
                     munow = 5.*np.log10(DATA_LBAND[ifile][2][0])-5.
-                    errmunow = 5./np.log(10.)*DATA_LBAND[ifile][2][1]/DATA_LBAND[ifile][2][0]
+                    errmunow = 5./np.log(10.)*DATA_LBAND[ifile][2][1]/\
+                            DATA_LBAND[ifile][2][0]
                 
                     ### Storing absolute WISE magnitudes and errors [mag]
                     DATA_LBAND[ifile][6][5].append(W1now-munow)
-                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW1now**2.+errmunow**2.))
+                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW1now**2.+\
+                            errmunow**2.))
                     DATA_LBAND[ifile][6][5].append(W2now-munow)
-                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW2now**2.+errmunow**2.))
+                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW2now**2.+\
+                            errmunow**2.))
                     DATA_LBAND[ifile][6][5].append(W3now-munow)
-                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW3now**2.+errmunow**2.))
+                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW3now**2.+\
+                            errmunow**2.))
                     DATA_LBAND[ifile][6][5].append(W4now-munow)
-                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW4now**2.+errmunow**2.))
+                    DATA_LBAND[ifile][6][5].append(np.sqrt(errW4now**2.+\
+                            errmunow**2.))
 
 
 
