@@ -492,23 +492,18 @@ if 1==2:
 
 
 
-<<<<<<< HEAD
-### En esta parte se define la ThetaBig, poniendo los intervalos para cada parametro
-=======
+
 
 ### En esta parte se define la ThetaBig, 
 ### poniendo los intervalos para cada parametro
->>>>>>> 26a8dd4b6acab5d836e2e458520b03f337241a8d
+
 def thetabig(n,logSig,M,W,cosi):
    
     if 4.2 <= M <= 20. and \
             0. <= W <= 1. and \
             -np.inf <= logSig <= 0.6020599913279624 and \
-<<<<<<< HEAD
             2. <= n <= 6.5 and \
-=======
             1. <= n <= 7. and \
->>>>>>> 26a8dd4b6acab5d836e2e458520b03f337241a8d
             0. <= cosi <= 1.:
         return 1
     else:
@@ -2669,7 +2664,7 @@ if Part2:
                     color='black', linewidth=0.05, linestyle='-')
             plt.ylabel("$\\arcsinh(\\ln(\\mathrm{prob}))$")
             plt.xlabel("position in the chain")
-            fig.savefig("convergence_"+DATA_LBAND_now[0]+".png")
+            fig.savefig("convergencetwo_"+DATA_LBAND_now[0]+".png")
     
         ### Turn this on to make a corner plot of the results.
         if 1==1:
@@ -2682,7 +2677,7 @@ if Part2:
             fig = corner.corner(samples, \
             labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
             "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
-            fig.savefig("teste_"+DATA_LBAND_now[0]+".png")
+            fig.savefig("testeOne_"+DATA_LBAND_now[0]+".png")
 
         ### Turn this on to make a "CMD-WISE" plot of the results.
         if 1==2:
@@ -2819,8 +2814,8 @@ if Part2:
                 for i3 in range(0,len(Mpar_vals)):
                     for i4_notused in range(0,len(obpar_vals)):
                         for i5 in range(0,len(cosipar_vals)):
-                            vals_alphaL.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
-                            vals_MBL.append(WISE[i1,i2,i3,i4,i5,2])
+                            vals_alphaL.append(ALPHA_WISE[i1,i2,i3,i4,i5])
+                            vals_MBL.append(WISE[i1,i2,i3,i4,i5])
     
         ### Turn this on to fill the NaNs in the values (probably due to 
         ### the fact that the grid was not entirely computed).
@@ -2838,11 +2833,9 @@ if Part2:
                             vals_alphaL_name,axis,\
                             vals_alphaL,\
                             tp,allow_extrapolation_fill,prints,overwrite = False)
-<<<<<<< HEAD
-             ### filling the NaNs of MBL
-=======
+
             ### filling the NaNs of MBL
->>>>>>> 26a8dd4b6acab5d836e2e458520b03f337241a8d
+
             vals_MBL_name = "vals_MBL"
             vals_MBL = fillingNaNs(folder_filledNaNs,\
                             vals_MBL_name,axis,\
@@ -2852,10 +2845,10 @@ if Part2:
     
     
         ### Data on this specific star (to go to bayesian inference)
-        obs_alpha34 = DATA_LBAND_now[6][4][0]
-        sig_alpha34 = DATA_LBAND_now[6][4][1]
-        obs_MBL = DATA_LBAND_now[6][5][4]
-        sig_MBL = DATA_LBAND_now[6][5][5]
+        obs_alpha34 = DATA_LBAND_now[5][4][0]
+        sig_alpha34 = DATA_LBAND_now[5][4][1]
+        obs_MBL = DATA_LBAND_now[5][3][0]
+        sig_MBL = DATA_LBAND_now[5][3][1]
         x = [obs_alpha34,obs_MBL]
         sigmax = [sig_alpha34,sig_MBL]
         ###
@@ -2926,7 +2919,7 @@ if Part2:
                     color='black', linewidth=0.05, linestyle='-')
             plt.ylabel("$\\arcsinh(\\ln(\\mathrm{prob}))$")
             plt.xlabel("position in the chain")
-            fig.savefig("convergence_"+DATA_LBAND_now[0]+".png")
+            fig.savefig("convergenceone_"+DATA_LBAND_now[0]+".png")
     
         ### Turn this on to make a corner plot of the results.
         if 1==1:
@@ -2938,7 +2931,7 @@ if Part2:
             fig = corner.corner(samples, \
             labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
             "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
-            fig.savefig("teste_"+DATA_LBAND_now[0]+".png")
+            fig.savefig("testetwo_"+DATA_LBAND_now[0]+".png")
 
         ### Turn this on to make a "CMD-WISE" plot of the results.
         if 1==2:
@@ -3011,12 +3004,12 @@ if Part2:
                  ### Hyperrectangular limits for the bayesian inference.
                 binflims = [
                         [2.0,6.5],
-<<<<<<< HEAD
-                        [newlog10abs(0.02,1e5),newlog10abs(4.00,1e5)],
-=======
+
+                        [read_data.newlog10abs(0.02,1e5),read_data.newlog10abs(4.00,1e5)],
+
                         [read_data.newlog10abs(0.02,1e5),\
                                 read_data.newlog10abs(4.00,1e5)],
->>>>>>> 26a8dd4b6acab5d836e2e458520b03f337241a8d
+
                         [4.2,14.6],
                         [1.2,1.4],
                         [0.26,1.00]
