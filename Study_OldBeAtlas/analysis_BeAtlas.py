@@ -2403,8 +2403,8 @@ if Part2:
                 for i3 in range(0,len(Mpar_vals)):
                     for i4_notused in range(0,len(obpar_vals)):
                         for i5 in range(0,len(cosipar_vals)):
-                            vals_alphaL.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
-                            vals_MBL.append(WISE[i1,i2,i3,i4,i5,2])
+                            vals_alphaL.append(ALPHAL[i1,i2,i3,i4,i5])
+                            vals_MBL.append(appBL[i1,i2,i3,i4,i5])
     
         ### Turn this on to fill the NaNs in the values (probably due to 
         ### the fact that the grid was not entirely computed).
