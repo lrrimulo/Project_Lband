@@ -425,8 +425,8 @@ def fBe(M,A):
     log10ell = np.log10(1.4)+3.5*np.log10(M)
    
    
-   
-    A0 = -14.09101
+    A0 = -16.17045
+    ### A0 = -14.09101
     A1 = 8.71656
     A2 = -1.95159
     A3 = 0.11596
@@ -448,7 +448,7 @@ def fBe(M,A):
 
 def find_area():
 
-    Ar = 1.
+    Ar = (12+7+23+12+15+14+10+7)/800.
     x = np.array([1.+0.01*float(i) for i in range(0,3500+1)])
     y = np.array([fBe(elem,Ar) for elem in x])
 
@@ -470,10 +470,13 @@ def find_area():
 
     return
 
+#find_area()
+
+
 
 if 1==2:
 
-    A = 1.
+    A = 1./8.
     x = np.array([1.+0.01*float(i) for i in range(0,3500+1)])
     y = np.array([fBe(elem,A) for elem in x])
 
@@ -486,6 +489,8 @@ if 1==2:
     #plt.yscale("log")
     plt.tight_layout()
     plt.show()
+    
+    sys.exit()
 
 
 
@@ -554,10 +559,10 @@ if 1==2:
     ### 
     def thetabig_only(n,logSig,M,W,cosi):
    
-        if 1. <= M <= 20. and \
+        if 4.2 <= M <= 20. and \
                 0. <= W <= 1. and \
                 -2. <= logSig <= 0.6020599913279624 and \
-                1. <= n <= 7. and \
+                3.0 <= n <= 4.5 and \
                 0. <= cosi <= 1.:
             return 1
         else:
@@ -882,7 +887,7 @@ figures = "Figures/"
     
 
 
-if 1==2:
+if 1==1:
 
 
     ### Output file containing the walkers and derived quantities for 
@@ -1025,7 +1030,7 @@ if 1==2:
 
 #############################
 ### Plotting observed Lenorzer Diagrams
-if 1==1:
+if 1==2:
     
     
     
