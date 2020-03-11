@@ -675,9 +675,10 @@ if 1==2:
     vals_MW3 = []
     vals_alphaL = []
     vals_MBL = []
-    vals_len_x = []
-    vals_len_y = []
-    vals_len_z = []
+    vals_H14 = []
+    vals_Bra = []
+    vals_Pfg = []
+    vals_FBL = []
     i4 = obpar.index("1.40")
     for i1 in range(0,len(npar_vals)):
         for i2 in range(0,len(logsigpar_vals)):
@@ -688,16 +689,11 @@ if 1==2:
                         vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
                         vals_alphaL.append(ALPHAL[i1,i2,i3,i4,i5])
                         vals_MBL.append(MBL[i1,i2,i3,i4,i5])
-                        vals_len_x.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0]/\
-                                LINE_PFGAMMA[i1,i2,i3,i4,i5,0])
-                        vals_len_y.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0]/\
-                                LINE_BRALPHA[i1,i2,i3,i4,i5,0])
-                        vals_len_z.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0]/\
-                                (BL_FLUX[i1,i2,i3,i4,i5,0]/\
-                                (BL_FLUX[i1,i2,i3,i4,i5,2]-\
-                                BL_FLUX[i1,i2,i3,i4,i5,1])*1e-4)
-                                )
-    
+                        vals_H14.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0])
+                        vals_Bra.append(LINE_BRALPHA[i1,i2,i3,i4,i5,0])
+                        vals_Pfg.append(LINE_PFGAMMA[i1,i2,i3,i4,i5,0])
+                        vals_FBL.append(BL_FLUX[i1,i2,i3,i4,i5,0])
+                            
     ### Turn this on to fill the NaNs in the values (probably due to 
     ### the fact that the grid was not entirely computed).
     if 1==1:
@@ -733,26 +729,31 @@ if 1==2:
         vals_MBL = fillingNaNs(folder_filledNaNs,\
                         vals_MBL_name,axis,\
                         vals_MBL,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)    
-        ### filling the NaNs of Lenorzer_x
-        vals_len_x_name = "vals_len_x"
-        vals_len_x = fillingNaNs(folder_filledNaNs,\
-                        vals_len_x_name,axis,\
-                        vals_len_x,\
                         tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of Lenorzer_y
-        vals_len_y_name = "vals_len_y"
-        vals_len_y = fillingNaNs(folder_filledNaNs,\
-                        vals_len_y_name,axis,\
-                        vals_len_y,\
+        ### filling the NaNs of H14
+        vals_H14_name = "vals_H14"
+        vals_H14 = fillingNaNs(folder_filledNaNs,\
+                        vals_H14_name,axis,\
+                        vals_H14,\
                         tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of Lenorzer_z
-        vals_len_z_name = "vals_len_z"
-        vals_len_z = fillingNaNs(folder_filledNaNs,\
-                        vals_len_z_name,axis,\
-                        vals_len_z,\
+        ### filling the NaNs of Br alpha
+        vals_Bra_name = "vals_Bra"
+        vals_Bra = fillingNaNs(folder_filledNaNs,\
+                        vals_Bra_name,axis,\
+                        vals_Bra,\
                         tp,allow_extrapolation_fill,prints,overwrite = False)
-
+        ### filling the NaNs of Pf gamma
+        vals_Pfg_name = "vals_Pfg"
+        vals_Pfg = fillingNaNs(folder_filledNaNs,\
+                        vals_Pfg_name,axis,\
+                        vals_Pfg,\
+                        tp,allow_extrapolation_fill,prints,overwrite = False)
+        ### filling the NaNs of BL flux
+        vals_FBL_name = "vals_FBL"
+        vals_FBL = fillingNaNs(folder_filledNaNs,\
+                        vals_FBL_name,axis,\
+                        vals_FBL,\
+                        tp,allow_extrapolation_fill,prints,overwrite = False)
 
 
     lnprobs = []
@@ -793,24 +794,27 @@ if 1==2:
     [MBL_print.append(lrr.interpLinND(points[ipoint],axis,\
             vals_MBL,\
             tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating len_x...")
-    len_x_print = []
-    [len_x_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_len_x,\
+    print("Evaluating H14...")
+    H14_print = []
+    [H14_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_H14,\
             tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating len_y...")
-    len_y_print = []
-    [len_y_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_len_y,\
+    print("Evaluating Br alpha...")
+    Bra_print = []
+    [Bra_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_Bra,\
             tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating len_z...")
-    len_z_print = []
-    [len_z_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_len_z,\
+    print("Evaluating Pf gamma...")
+    Pfg_print = []
+    [Pfg_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_Pfg,\
             tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-            
-            
-            
+    print("Evaluating BL flux...")
+    FBL_print = []
+    [FBL_print.append(lrr.interpLinND(points[ipoint],axis,\
+            vals_FBL,\
+            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+                        
             
 
     fp = open(prior_file,"w")
@@ -850,18 +854,22 @@ if 1==2:
     [fp.write(" "+str(MBL_print[iline])) \
             for iline in range(0,len(MBL_print))]
     fp.write("\n")
-    fp.write("LENORZER_X")
-    [fp.write(" "+str(len_x_print[iline])) \
-            for iline in range(0,len(len_x_print))]
+    fp.write("H14")
+    [fp.write(" "+str(H14_print[iline])) \
+            for iline in range(0,len(H14_print))]
     fp.write("\n")
-    fp.write("LENORZER_Y")
-    [fp.write(" "+str(len_y_print[iline])) \
-            for iline in range(0,len(len_y_print))]
+    fp.write("BRALPHA")
+    [fp.write(" "+str(Bra_print[iline])) \
+            for iline in range(0,len(Bra_print))]
     fp.write("\n")
-    fp.write("LENORZER_Z")
-    [fp.write(" "+str(len_z_print[iline])) \
-            for iline in range(0,len(len_z_print))]
+    fp.write("PFGAMMA")
+    [fp.write(" "+str(Pfg_print[iline])) \
+            for iline in range(0,len(Pfg_print))]
     fp.write("\n")
+    fp.write("BL_FLUX")
+    [fp.write(" "+str(FBL_print[iline])) \
+            for iline in range(0,len(FBL_print))]
+    fp.write("\n")    
 
     fp.close()
 
@@ -886,11 +894,8 @@ if 1==2:
 ### Directory for the figures:
 figures = "Figures/"
 
-    
-    
 
-
-if 1==1:
+if 1==2:
 
 
     ### Output file containing the walkers and derived quantities for 
@@ -1033,7 +1038,7 @@ if 1==2:
 
 #############################
 ### Plotting observed Lenorzer Diagrams
-if 1==2:
+if 1==1:
     
     
     
@@ -1050,12 +1055,14 @@ if 1==2:
     
     ### 
     for iline in range(0,len(linesprior)):
-        if linesprior[iline][0] == "LENORZER_X":
-            idx_len_x = iline
-        if linesprior[iline][0] == "LENORZER_Y":
-            idx_len_y = iline
-        if linesprior[iline][0] == "LENORZER_Z":
-            idx_len_z = iline
+        if linesprior[iline][0] == "H14":
+            idx_H14 = iline
+        if linesprior[iline][0] == "BRALPHA":
+            idx_Bra = iline
+        if linesprior[iline][0] == "PFGAMMA":
+            idx_Pfg = iline
+        if linesprior[iline][0] == "BL_FLUX":
+            idx_FBL = iline
     ### 
     Wal_len_x = []
     Wal_len_y = []
@@ -1063,17 +1070,18 @@ if 1==2:
     el_count = 1
     i = 1
     while el_count <= Nprior and i < len(linesprior[iline]):
-        if not np.isnan(float(linesprior[idx_len_x][i])) \
-                and not np.isnan(float(linesprior[idx_len_y][i])) \
-                and not np.isnan(float(linesprior[idx_len_z][i])):
-            Wal_len_x.append(float(linesprior[idx_len_x][i]))
-            Wal_len_y.append(float(linesprior[idx_len_y][i]))
-            Wal_len_z.append(float(linesprior[idx_len_z][i]))
+        if not np.isnan(float(linesprior[idx_H14][i])) \
+                and not np.isnan(float(linesprior[idx_Bra][i])) \
+                and not np.isnan(float(linesprior[idx_Pfg][i])) \
+                and not np.isnan(float(linesprior[idx_FBL][i])):
+            Wal_len_x.append(float(linesprior[idx_H14][i])/\
+                    float(linesprior[idx_Pfg][i]))
+            Wal_len_y.append(float(linesprior[idx_H14][i])/\
+                    float(linesprior[idx_Bra][i]))
+            Wal_len_z.append(float(linesprior[idx_H14][i])/\
+                    float(linesprior[idx_FBL][i])*(3.47-3.41)*1e4)
             el_count += 1
         i += 1    
-    
-    
-    
     
     
     
@@ -1148,7 +1156,6 @@ if 1==2:
         for i in range(0,len(Wal_len_x))]
     Wal_len_y_plot = [lrr.scale_two_arcsinh(Wal_len_y[i],up1,up2,down1,down2) \
         for i in range(0,len(Wal_len_x))]
-        
 
     ### 
     plt.figure(1,figsize=(11,11), dpi=100)
@@ -1157,6 +1164,8 @@ if 1==2:
         linewidth=0.6)  ### Vertical dotted line
     plt.plot([-1e32,1e32],[0.,0.],linestyle=":",color="black",\
         linewidth=0.6)  ### Horizontal dotted line
+    plt.plot([-1e5,1e5],[-1e5,1e5],linestyle=":",color="black",\
+        linewidth=0.6)  ### Diagonal dotted line
     ### 
     type1_x = -0.1
     type1_y = -0.2
@@ -1172,7 +1181,7 @@ if 1==2:
             up1,up2,down1,down2)],linestyle=":",color="blue",\
         linewidth=0.5)  ### Horizontal line delimiting "type 1 region"
     
-    for i in xrange(0,len(Wal_len_x_plot)):
+    for i in range(0,len(Wal_len_x_plot)):
         if Wal_len_z[i] >= 0.:
             markk="o"
         else:
@@ -1181,7 +1190,7 @@ if 1==2:
                 s=1e4*(np.abs(Wal_len_z[i]))/0.06e4,\
                 color="cyan",facecolors="None",alpha=0.1)
     
-    for i in xrange(0,len(XLplot)):
+    for i in range(0,len(XLplot)):
         if H14BL[i] >= 0.:
             markk="o"
         else:
@@ -1195,7 +1204,55 @@ if 1==2:
         plt.errorbar([XLplot[i]],[YLplot[i]],xerr=errXLplot[i],\
                 yerr=errYLplot[i],color="black")
         plt.annotate("HD "+names[i],[XLplot[i],YLplot[i]],size=7.)
+    
+    if 1==1:
+
+        names_granada = ["BK Cam", "28 Tau", "88 Her", "66 Oph", \
+                "V923 Aql", "28 Cyg", "EW Lac"]
+        Bra_granada = [12.01e-13,7.01e-13,0.60e-13,19.60e-13,\
+                10.22e-13,13.1e-13,2.97e-13]
+        H14_granada = [8.16e-13,0.70e-13,0.44e-13,np.nan,\
+                0.83e-13,1.10e-13,0.56e-13]
+        Pfg_granada = [11.10e-13,4.21e-13,0.88e-13,4.44e-13,\
+                3.43e-13,6.19e-13,1.83e-13]
+            
+        x_granada = [H14_granada[i]/Pfg_granada[i] \
+                for i in range(0,len(H14_granada))]
+        y_granada = [H14_granada[i]/Bra_granada[i] \
+                for i in range(0,len(H14_granada))]
         
+        x_granada_plot = [lrr.scale_two_arcsinh(x_granada[i],up1,up2,down1,down2) \
+            for i in range(0,len(x_granada))]
+        y_granada_plot = [lrr.scale_two_arcsinh(y_granada[i],up1,up2,down1,down2) \
+            for i in range(0,len(y_granada))]
+        
+        for i in range(0,len(x_granada_plot)):
+            plt.scatter([x_granada_plot[i]],[y_granada_plot[i]],color="red")
+
+    if 1==1:
+
+        names_mennick = ["mu Cen", "V767 Cen", "V817 Cen", "OZ Nor", \
+                "V341 Sge", "V4024 Sgr", "V1150 Tau", "V395 Vul"]
+        Bra_mennick = [5.46e-11,9.73e-12,1.62e-11,1.28e-11,\
+                3.41e-12,1.99e-11,5.91e-12,1.06e-11]
+        H14_mennick = [1.03e-11,9.25e-12,1.23e-11,9.38e-12,\
+                6.80e-13,1.84e-11,4.04e-12,5.58e-12]
+        Pfg_mennick = [2.32e-11,1.17e-11,1.26e-11,9.50e-12,\
+                1.47e-12,2.23e-11,5.28e-12,7.88e-12]
+            
+        x_mennick = [H14_mennick[i]/Pfg_mennick[i] \
+                for i in range(0,len(H14_mennick))]
+        y_mennick = [H14_mennick[i]/Bra_mennick[i] \
+                for i in range(0,len(H14_mennick))]
+        
+        x_mennick_plot = [lrr.scale_two_arcsinh(x_mennick[i],up1,up2,down1,down2) \
+            for i in range(0,len(x_mennick))]
+        y_mennick_plot = [lrr.scale_two_arcsinh(y_mennick[i],up1,up2,down1,down2) \
+            for i in range(0,len(y_mennick))]
+        
+        for i in range(0,len(x_granada_plot)):
+            plt.scatter([x_mennick_plot[i]],[y_mennick_plot[i]],color="brown")
+
     
     plt.scatter([1e32], [1e32],marker="o",s=1e4*0.01,\
         color="black",facecolors="none", \
