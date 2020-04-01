@@ -254,10 +254,10 @@ ALPHAL = read_data.alphaL(BL_FLUX[:,:,:,:,:,0],\
             BL_FLUX[:,:,:,:,:,1],BL_FLUX[:,:,:,:,:,2],\
             RL_FLUX[:,:,:,:,:,0],\
             RL_FLUX[:,:,:,:,:,1],RL_FLUX[:,:,:,:,:,2])
-### 
+### Vega fluxes in the regions defined by Mennickent et al. 2009.
 FBL_Vega = read_data.Vegaflux(3.41,3.47,Nnpts = 50)
 FRL_Vega = read_data.Vegaflux(3.93,4.00,Nnpts = 50)
-### 
+### Absolute magnitudes associated with Mennickent's fluxes
 MBL = read_data.ap_mag_Menn(BL_FLUX[:,:,:,:,:,0],FBL_Vega)
 MRL = read_data.ap_mag_Menn(RL_FLUX[:,:,:,:,:,0],FRL_Vega)
 
@@ -1017,7 +1017,7 @@ if 1==2:
     plt.ylim([0.,-7.])
     ### 
     plt.tight_layout()
-    plt.show()
+    plt.savefig(figures+"CMDDATA.png")
     
     sys.exit()
 
@@ -1207,52 +1207,82 @@ if 1==1:
     
     if 1==1:
 
-        names_granada = ["BK Cam", "28 Tau", "88 Her", "66 Oph", \
-                "V923 Aql", "28 Cyg", "EW Lac"]
-        Bra_granada = [12.01e-13,7.01e-13,0.60e-13,19.60e-13,\
-                10.22e-13,13.1e-13,2.97e-13]
-        H14_granada = [8.16e-13,0.70e-13,0.44e-13,np.nan,\
-                0.83e-13,1.10e-13,0.56e-13]
-        Pfg_granada = [11.10e-13,4.21e-13,0.88e-13,4.44e-13,\
-                3.43e-13,6.19e-13,1.83e-13]
-            
-        x_granada = [H14_granada[i]/Pfg_granada[i] \
-                for i in range(0,len(H14_granada))]
-        y_granada = [H14_granada[i]/Bra_granada[i] \
-                for i in range(0,len(H14_granada))]
+        GranadaDATA, MennickentDATA = read_data.get_otherpapers()
+        
+        names_granada = [GranadaDATA[i][0] \
+                for i in range(0,len(GranadaDATA))]
+        
+        x_granada = [GranadaDATA[i][2][14,0]/GranadaDATA[i][8][0] \
+                for i in range(0,len(GranadaDATA))]
+        y_granada = [GranadaDATA[i][2][14,0]/GranadaDATA[i][5][0] \
+                for i in range(0,len(GranadaDATA))]
         
         x_granada_plot = [lrr.scale_two_arcsinh(x_granada[i],up1,up2,down1,down2) \
-            for i in range(0,len(x_granada))]
+                for i in range(0,len(x_granada))]
         y_granada_plot = [lrr.scale_two_arcsinh(y_granada[i],up1,up2,down1,down2) \
-            for i in range(0,len(y_granada))]
+                for i in range(0,len(y_granada))]
+
+        err_x_granada = [read_data.err_frac(GranadaDATA[i][2][14,0],\
+                GranadaDATA[i][8][0],GranadaDATA[i][2][14,1],\
+                GranadaDATA[i][8][1]) for i in range(0,len(x_granada))]
+        err_y_granada = [read_data.err_frac(GranadaDATA[i][2][14,0],\
+                GranadaDATA[i][5][0],GranadaDATA[i][2][14,1],\
+                GranadaDATA[i][5][1]) for i in range(0,len(x_granada))]
+
+        err_x_granada_plot = [abs(lrr.scale_two_arcsinh(x_granada[i],\
+                up1,up2,down1,down2,m="deriv"))*err_x_granada[i] \
+                for i in range(0,len(x_granada))]
+        err_y_granada_plot = [abs(lrr.scale_two_arcsinh(y_granada[i],\
+                up1,up2,down1,down2,m="deriv"))*err_y_granada[i] \
+                for i in range(0,len(y_granada))]
         
         for i in range(0,len(x_granada_plot)):
-            plt.scatter([x_granada_plot[i]],[y_granada_plot[i]],color="red")
+            plt.errorbar([x_granada_plot[i]],[y_granada_plot[i]],\
+                    xerr = err_x_granada_plot[i], yerr = err_y_granada_plot[i],\
+                    color="red")
+            plt.annotate("HD "+names_granada[i],\
+                    [x_granada_plot[i],y_granada_plot[i]],size=7.,color="red")
 
     if 1==1:
 
-        names_mennick = ["mu Cen", "V767 Cen", "V817 Cen", "OZ Nor", \
-                "V341 Sge", "V4024 Sgr", "V1150 Tau", "V395 Vul"]
-        Bra_mennick = [5.46e-11,9.73e-12,1.62e-11,1.28e-11,\
-                3.41e-12,1.99e-11,5.91e-12,1.06e-11]
-        H14_mennick = [1.03e-11,9.25e-12,1.23e-11,9.38e-12,\
-                6.80e-13,1.84e-11,4.04e-12,5.58e-12]
-        Pfg_mennick = [2.32e-11,1.17e-11,1.26e-11,9.50e-12,\
-                1.47e-12,2.23e-11,5.28e-12,7.88e-12]
-            
-        x_mennick = [H14_mennick[i]/Pfg_mennick[i] \
-                for i in range(0,len(H14_mennick))]
-        y_mennick = [H14_mennick[i]/Bra_mennick[i] \
-                for i in range(0,len(H14_mennick))]
+        GranadaDATA, MennickentDATA = read_data.get_otherpapers()
+
+        names_mennick = [MennickentDATA[i][0] \
+                for i in range(0,len(MennickentDATA))]
+
+        x_mennick = [MennickentDATA[i][2][14,0]/MennickentDATA[i][8][0] \
+                for i in range(0,len(MennickentDATA))]
+        y_mennick = [MennickentDATA[i][2][14,0]/MennickentDATA[i][5][0] \
+                for i in range(0,len(MennickentDATA))]
         
         x_mennick_plot = [lrr.scale_two_arcsinh(x_mennick[i],up1,up2,down1,down2) \
             for i in range(0,len(x_mennick))]
         y_mennick_plot = [lrr.scale_two_arcsinh(y_mennick[i],up1,up2,down1,down2) \
             for i in range(0,len(y_mennick))]
+
+
+        err_x_mennick = [read_data.err_frac(MennickentDATA[i][2][14,0],\
+                MennickentDATA[i][8][0],MennickentDATA[i][2][14,1],\
+                MennickentDATA[i][8][1]) for i in range(0,len(x_mennick))]
+        err_y_mennick = [read_data.err_frac(MennickentDATA[i][2][14,0],\
+                MennickentDATA[i][5][0],MennickentDATA[i][2][14,1],\
+                MennickentDATA[i][5][1]) for i in range(0,len(x_mennick))]
+
+        err_x_mennick_plot = [abs(lrr.scale_two_arcsinh(x_mennick[i],\
+                up1,up2,down1,down2,m="deriv"))*err_x_mennick[i] \
+                for i in range(0,len(x_mennick))]
+        err_y_mennick_plot = [abs(lrr.scale_two_arcsinh(y_mennick[i],\
+                up1,up2,down1,down2,m="deriv"))*err_y_mennick[i] \
+                for i in range(0,len(y_mennick))]
+
         
         for i in range(0,len(x_granada_plot)):
-            plt.scatter([x_mennick_plot[i]],[y_mennick_plot[i]],color="brown")
-
+            plt.errorbar([x_mennick_plot[i]],[y_mennick_plot[i]],\
+                    xerr = err_x_mennick_plot[i], yerr = err_y_mennick_plot[i],\
+                    color="brown")
+            plt.annotate("HD "+names_mennick[i],\
+                    [x_mennick_plot[i],y_mennick_plot[i]],size=7.,color="brown")
+                    
     
     plt.scatter([1e32], [1e32],marker="o",s=1e4*0.01,\
         color="black",facecolors="none", \

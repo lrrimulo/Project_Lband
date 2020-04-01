@@ -1,5 +1,6 @@
 """
-
+This file contains several functions/procedures to read the data on our
+Be stars.
 """
  
 from __future__ import division
@@ -28,6 +29,7 @@ def newlog10abs(x,B):
     return np.arcsinh(abs(B*x))/np.log(10.)-np.log10(2.*abs(B))
 
 
+### 
 def err_frac(A,B,errA,errB):
     """
     Suppose you have a function y = A/B.
@@ -41,10 +43,12 @@ def err_frac(A,B,errA,errB):
     
 
 
-
+### 
 def alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R):
     """
-
+    Definition of the parameter "alphaL", as a function 
+    of the red and blue fluxes, 'R__L' and 'B__L', and their domains in 
+    wavelength.
     """
     return 1.-np.log(B__L/(lamb2B-lamb1B)*(lamb2R-lamb1R)/R__L)/\
                 np.log((lamb2R+lamb1R)/(lamb2B+lamb1B))
@@ -52,16 +56,17 @@ def alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R):
 
 def err_alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R,errB__L,errR__L):
     """
-    
+    This function returns the standard deviation of the function "alphaL".
     """
     return 1./np.log((lamb2R+lamb1R)/(lamb2B+lamb1B))*\
                 np.sqrt(errB__L**2./B__L**2.+errR__L**2./R__L**2.)
 
 
-
+### 
 def Vegaflux(lamb1,lamb2,Nnpts = 50):
     """
-    
+    Returns the flux of Vega between 'lamb1' [microns] 
+    and 'lamb2' [microns].
     """
     
     ### Returns the SED of VEGA (9 nm - 160 microns):
@@ -82,19 +87,15 @@ def Vegaflux(lamb1,lamb2,Nnpts = 50):
     return lrr.integrate_trapezia(ylpf,dllamb)  ### [erg s^-1 cm^-2]
 
 
+### 
 def ap_mag_Menn(flux,FVega):
-    """
-    
-    """
-    ### Apparent magnitudes B and R and error [mag]
     return -2.5*np.log10(flux/FVega)
 
 def err_ap_mag_Menn(flux,errflux):
     """
-    
+    Uncertainty associated with the function given by "ap_mag_Menn"
     """
-    ### Apparent magnitudes B and R and error [mag]
-    return 2.5/np.log(10.)*errflux/flux
+    return abs(2.5/np.log(10.)/flux)*errflux
 
                         
 
@@ -408,28 +409,40 @@ def List_Stars(to_return):
         Vieira_fitted =     [
                             None,
                             None,
-                            [(25.,9.,9.),(0.9,0.1,0.1),(np.nan,np.nan,np.nan),(np.nan,np.nan,np.nan)],  
-                            [(5.6,1.,1.),(0.6,0.2,0.2),(np.nan,np.nan,np.nan),(np.nan,np.nan,np.nan)],  
-                            [(9.,2.,2.),(0.7,0.1,0.1),(2.3,0.1,0.2),(-12.2,0.1,0.1)], 
-                            [(7.,1.,1.),(0.7,0.1,0.1),(2.6,0.1,0.2),(-11.2,0.1,0.1)], 
+                            [(25.,9.,9.),(0.9,0.1,0.1),\
+                                    (np.nan,np.nan,np.nan),\
+                                    (np.nan,np.nan,np.nan)],  
+                            [(5.6,1.,1.),(0.6,0.2,0.2),\
+                                    (np.nan,np.nan,np.nan),\
+                                    (np.nan,np.nan,np.nan)],  
+                            [(9.,2.,2.),(0.7,0.1,0.1),\
+                                    (2.3,0.1,0.2),(-12.2,0.1,0.1)], 
+                            [(7.,1.,1.),(0.7,0.1,0.1),\
+                                    (2.6,0.1,0.2),(-11.2,0.1,0.1)], 
                             None, 
-                            [(3.8,0.6,0.6),(0.8,0.1,0.1),(2.0,0.1,0.2),(-12.2,0.1,0.1)], 
-                            [(5.,1.,1.),(0.8,0.1,0.1),(3.2,0.2,0.3),(-12.3,0.3,0.2)], 
+                            [(3.8,0.6,0.6),(0.8,0.1,0.1),\
+                                    (2.0,0.1,0.2),(-12.2,0.1,0.1)], 
+                            [(5.,1.,1.),(0.8,0.1,0.1),\
+                                    (3.2,0.2,0.3),(-12.3,0.3,0.2)], 
                             None, 
-                            [(6.5,0.7,0.7),(0.7,0.1,0.1),(5.,1.,1.),(-12.1,0.2,0.2)],
-                            [(5.,1.,1.),(0.8,0.1,0.1),(3.2,0.2,0.2),(-11.2,0.3,0.3)],
+                            [(6.5,0.7,0.7),(0.7,0.1,0.1),\
+                                    (5.,1.,1.),(-12.1,0.2,0.2)],
+                            [(5.,1.,1.),(0.8,0.1,0.1),\
+                                    (3.2,0.2,0.2),(-11.2,0.3,0.3)],
                             None,
-                            [(11.,2.,2.),(0.7,0.1,0.1),(3.3,0.2,0.1),(-11.,0.2,0.2)],
-                            None,
-                            None,
-                            None,
-                            None,
-                            None,
+                            [(11.,2.,2.),(0.7,0.1,0.1),\
+                                    (3.3,0.2,0.1),(-11.,0.2,0.2)],
                             None,
                             None,
                             None,
                             None,
-                            [(5.3,0.9,0.9),(0.32,0.06,0.06),(2.4,0.1,0.1),(-12.1,0.1,0.2)]
+                            None,
+                            None,
+                            None,
+                            None,
+                            None,
+                            [(5.3,0.9,0.9),(0.32,0.06,0.06),\
+                                    (2.4,0.1,0.1),(-12.1,0.1,0.2)]
                             ]
 
 
@@ -1499,7 +1512,353 @@ def hpd_grid(sample, alpha=0.05, roundto=2):
 
 
 
+def get_otherpapers():
+    """
+    This is a procedure under construction...
+    """
+    
+    
+    ### Directory of the location of the data on the Be stars
+    data_folder = "./../MedidasLogs/otherpapers/"
+    
+    
+    f0 = open(data_folder+"Granada_etal_2010_table1.txt","r")
+    GranadaT1lines = f0.readlines()
+    f0.close()
+    GranadaT1lines = [GranadaT1lines[i].split() \
+            for i in range(11,len(GranadaT1lines))]
+    #print(GranadaT1lines)
+    #print("")
 
+    f0 = open(data_folder+"Granada_etal_2010_table2.txt","r")
+    GranadaT2lines = f0.readlines()
+    f0.close()    
+    GranadaT2lines = [GranadaT2lines[i].split() \
+            for i in range(13,len(GranadaT2lines))]
+    #print(GranadaT2lines)
+    #print("")
+    
+    f0 = open(data_folder+"Granada_etal_2010_table3.txt","r")
+    GranadaT3lines = f0.readlines()
+    f0.close()        
+    GranadaT3lines = [GranadaT3lines[i].split() \
+            for i in range(13,len(GranadaT3lines))]
+    #print(GranadaT3lines)
+    #print("")
+
+    f0 = open(data_folder+"Granada_etal_2010_table4.txt","r")
+    GranadaT4lines = f0.readlines()
+    f0.close()            
+    GranadaT4lines = [GranadaT4lines[i].split() \
+            for i in range(13,len(GranadaT4lines))]
+    #print(GranadaT4lines)
+    #print("")
+    
+    f0 = open(data_folder+"Mennickent_etal_2009_table3.txt","r")
+    MennickentT3lines = f0.readlines()
+    f0.close()                
+    MennickentT3lines = [MennickentT3lines[i].split() \
+            for i in range(14,len(MennickentT3lines))]    
+    #print(MennickentT3lines)
+    #print("")
+    
+    ### 
+    GranadaDATA = []
+    MennickentDATA = []
+    Nmax = 100
+    for istar in range(0,len(GranadaT1lines)-1):
+        GranadaDATA.append( [
+                GranadaT1lines[istar][2],           ### [0] HD name
+                GranadaT1lines[istar][0]+" "+\
+                        GranadaT1lines[istar][1],   ### [1] Star name
+                np.zeros((Nmax+1,2)),               ### [2] flux humphreys [cgs]
+                np.zeros((Nmax+1,2)),               ### [3] EW humphreys [Angs]
+                np.zeros((Nmax+1,2)),               ### [4] FWHM humphreys [Angs]
+                np.array([np.nan,np.nan]),          ### [5] flux Bralpha [cgs]
+                np.array([np.nan,np.nan]),          ### [6] EW Bralpha [Angs]
+                np.array([np.nan,np.nan]),          ### [7] FWHM Bralpha [Angs]
+                np.array([np.nan,np.nan]),          ### [8] flux Pfgamma [cgs]
+                np.array([np.nan,np.nan]),          ### [9] EW Pfgamma [Angs]
+                np.array([np.nan,np.nan]),          ### [10] FWHM Pfgamma [Angs]
+                ])
+        
+        GranadaDATA[istar][2][:,:] = np.nan
+        GranadaDATA[istar][3][:,:] = np.nan
+        GranadaDATA[istar][4][:,:] = np.nan
+    
+
+        for iline in range(0,len(GranadaT2lines)):
+
+            if GranadaT2lines[iline][1] == "6":
+                hump_idx = int(GranadaT2lines[iline][0])
+            
+                if GranadaT2lines[iline][istar+3] == "None" or \
+                        GranadaT2lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][3][hump_idx,0] = np.nan
+                    GranadaDATA[istar][3][hump_idx,1] = np.nan
+                else:
+                    GranadaDATA[istar][3][hump_idx,0] = \
+                            float(GranadaT2lines[iline][istar+3])
+                    GranadaDATA[istar][3][hump_idx,1] = \
+                            abs(GranadaDATA[istar][3][hump_idx,0])*0.1
+
+            if GranadaT2lines[iline][0] == "5" \
+                    and GranadaT2lines[iline][1] == "4":
+            
+                if GranadaT2lines[iline][istar+3] == "None" or \
+                        GranadaT2lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][6][0] = np.nan
+                    GranadaDATA[istar][6][1] = np.nan
+                else:
+                    GranadaDATA[istar][6][0] = \
+                            float(GranadaT2lines[iline][istar+3])
+                    GranadaDATA[istar][6][1] = \
+                            abs(GranadaDATA[istar][6][0])*0.1
+
+            if GranadaT2lines[iline][0] == "8" \
+                    and GranadaT2lines[iline][1] == "5":
+            
+                if GranadaT2lines[iline][istar+3] == "None" or \
+                        GranadaT2lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][9][0] = np.nan
+                    GranadaDATA[istar][9][1] = np.nan
+                else:
+                    GranadaDATA[istar][9][0] = \
+                            float(GranadaT2lines[iline][istar+3])
+                    GranadaDATA[istar][9][1] = \
+                            abs(GranadaDATA[istar][9][0])*0.1    
+
+
+
+
+
+
+        for iline in range(0,len(GranadaT3lines)):
+
+            if GranadaT3lines[iline][1] == "6":
+                hump_idx = int(GranadaT3lines[iline][0])
+            
+                if GranadaT3lines[iline][istar+3] == "None" or \
+                        GranadaT3lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][2][hump_idx,0] = np.nan
+                    GranadaDATA[istar][2][hump_idx,1] = np.nan
+                else:
+                    GranadaDATA[istar][2][hump_idx,0] = \
+                            float(GranadaT3lines[iline][istar+3])*1e-13
+                    GranadaDATA[istar][2][hump_idx,1] = \
+                            abs(GranadaDATA[istar][2][hump_idx,0])*0.1
+
+            if GranadaT3lines[iline][0] == "5" \
+                    and GranadaT3lines[iline][1] == "4":
+            
+                if GranadaT3lines[iline][istar+3] == "None" or \
+                        GranadaT3lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][5][0] = np.nan
+                    GranadaDATA[istar][5][1] = np.nan
+                else:
+                    GranadaDATA[istar][5][0] = \
+                            float(GranadaT3lines[iline][istar+3])*1e-13
+                    GranadaDATA[istar][5][1] = \
+                            abs(GranadaDATA[istar][5][0])*0.1
+
+            if GranadaT3lines[iline][0] == "8" \
+                    and GranadaT3lines[iline][1] == "5":
+            
+                if GranadaT3lines[iline][istar+3] == "None" or \
+                        GranadaT3lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][8][0] = np.nan
+                    GranadaDATA[istar][8][1] = np.nan
+                else:
+                    GranadaDATA[istar][8][0] = \
+                            float(GranadaT3lines[iline][istar+3])*1e-13
+                    GranadaDATA[istar][8][1] = \
+                            abs(GranadaDATA[istar][8][0])*0.1    
+    
+    
+
+
+
+
+
+
+        for iline in range(0,len(GranadaT4lines)):
+
+            if GranadaT4lines[iline][1] == "6":
+                hump_idx = int(GranadaT4lines[iline][0])
+            
+                if GranadaT4lines[iline][istar+3] == "None" or \
+                        GranadaT4lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][4][hump_idx,0] = np.nan
+                    GranadaDATA[istar][4][hump_idx,1] = np.nan
+                else:
+                    GranadaDATA[istar][4][hump_idx,0] = \
+                            float(GranadaT4lines[iline][istar+3])
+                    GranadaDATA[istar][4][hump_idx,1] = 40.
+
+            if GranadaT4lines[iline][0] == "5" \
+                    and GranadaT4lines[iline][1] == "4":
+            
+                if GranadaT4lines[iline][istar+3] == "None" or \
+                        GranadaT4lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][7][0] = np.nan
+                    GranadaDATA[istar][7][1] = np.nan
+                else:
+                    GranadaDATA[istar][7][0] = \
+                            float(GranadaT4lines[iline][istar+3])
+                    GranadaDATA[istar][7][1] = 40.
+
+            if GranadaT4lines[iline][0] == "8" \
+                    and GranadaT4lines[iline][1] == "5":
+            
+                if GranadaT4lines[iline][istar+3] == "None" or \
+                        GranadaT4lines[iline][istar+3] == "em":
+                    GranadaDATA[istar][10][0] = np.nan
+                    GranadaDATA[istar][10][1] = np.nan
+                else:
+                    GranadaDATA[istar][10][0] = \
+                            float(GranadaT4lines[iline][istar+3])
+                    GranadaDATA[istar][10][1] = 40.    
+    
+    
+    
+    
+    
+        MennickentDATA.append( [
+                "",                                     ### [0] HD name
+                MennickentT3lines[istar][0]+" "+\
+                        MennickentT3lines[istar][1],    ### [1] Star name
+                np.zeros((Nmax+1,2)),                   ### [2] flux humphreys [cgs]
+                np.zeros((Nmax+1,2)),                   ### [3] EW humphreys [Angs]
+                np.zeros((Nmax+1,2)),                   ### [4] FWHM humphreys [Angs]
+                np.array([np.nan,np.nan]),              ### [5] flux Bralpha [cgs]
+                np.array([np.nan,np.nan]),              ### [6] EW Bralpha [Angs]
+                np.array([np.nan,np.nan]),              ### [7] FWHM Bralpha [Angs]
+                np.array([np.nan,np.nan]),              ### [8] flux Pfgamma [cgs]
+                np.array([np.nan,np.nan]),              ### [9] EW Pfgamma [Angs]
+                np.array([np.nan,np.nan]),              ### [10] FWHM Pfgamma [Angs]
+                ])
+        
+        MennickentDATA[istar][2][:,:] = np.nan
+        MennickentDATA[istar][3][:,:] = np.nan
+        MennickentDATA[istar][4][:,:] = np.nan    
+    
+
+
+
+
+        if MennickentT3lines[istar][2] == "None" or \
+                MennickentT3lines[istar][2] == "em":
+            MennickentDATA[istar][5][0] = np.nan
+            MennickentDATA[istar][5][1] = np.nan
+        else:
+            MennickentDATA[istar][5][0] = \
+                    float(MennickentT3lines[istar][2])
+            MennickentDATA[istar][5][1] = \
+                    abs(MennickentDATA[istar][5][0])*0.1
+
+
+        if MennickentT3lines[istar][3] == "None" or \
+                MennickentT3lines[istar][3] == "em":
+            MennickentDATA[istar][8][0] = np.nan
+            MennickentDATA[istar][8][1] = np.nan
+        else:
+            MennickentDATA[istar][8][0] = \
+                    float(MennickentT3lines[istar][3])
+            MennickentDATA[istar][8][1] = \
+                    abs(MennickentDATA[istar][8][0])*0.1
+
+
+        if MennickentT3lines[istar][4] == "None" or \
+                MennickentT3lines[istar][4] == "em":
+            MennickentDATA[istar][2][14,0] = np.nan
+            MennickentDATA[istar][2][14,1] = np.nan
+        else:
+            MennickentDATA[istar][2][14,0] = \
+                    float(MennickentT3lines[istar][4])
+            MennickentDATA[istar][2][14,1] = \
+                    abs(MennickentDATA[istar][2][14,0])*0.1
+
+
+
+
+        if MennickentT3lines[istar][5] == "None" or \
+                MennickentT3lines[istar][5] == "em":
+            MennickentDATA[istar][6][0] = np.nan
+            MennickentDATA[istar][6][1] = np.nan
+        else:
+            MennickentDATA[istar][6][0] = \
+                    float(MennickentT3lines[istar][5])
+            MennickentDATA[istar][6][1] = \
+                    abs(MennickentDATA[istar][6][0])*0.1
+
+
+        if MennickentT3lines[istar][6] == "None" or \
+                MennickentT3lines[istar][6] == "em":
+            MennickentDATA[istar][9][0] = np.nan
+            MennickentDATA[istar][9][1] = np.nan
+        else:
+            MennickentDATA[istar][9][0] = \
+                    float(MennickentT3lines[istar][6])
+            MennickentDATA[istar][9][1] = \
+                    abs(MennickentDATA[istar][9][0])*0.1
+
+
+        if MennickentT3lines[istar][7] == "None" or \
+                MennickentT3lines[istar][7] == "em":
+            MennickentDATA[istar][3][14,0] = np.nan
+            MennickentDATA[istar][3][14,1] = np.nan
+        else:
+            MennickentDATA[istar][3][14,0] = \
+                    float(MennickentT3lines[istar][7])
+            MennickentDATA[istar][3][14,1] = \
+                    abs(MennickentDATA[istar][3][14,0])*0.1
+
+
+
+        if MennickentT3lines[istar][8] == "None" or \
+                MennickentT3lines[istar][8] == "em":
+            MennickentDATA[istar][7][0] = np.nan
+            MennickentDATA[istar][7][1] = np.nan
+        else:
+            MennickentDATA[istar][7][0] = \
+                    float(MennickentT3lines[istar][8])
+            MennickentDATA[istar][7][1] = 40.
+
+
+        if MennickentT3lines[istar][9] == "None" or \
+                MennickentT3lines[istar][9] == "em":
+            MennickentDATA[istar][10][0] = np.nan
+            MennickentDATA[istar][10][1] = np.nan
+        else:
+            MennickentDATA[istar][10][0] = \
+                    float(MennickentT3lines[istar][9])
+            MennickentDATA[istar][10][1] = 40.
+
+
+        if MennickentT3lines[istar][10] == "None" or \
+                MennickentT3lines[istar][10] == "em":
+            MennickentDATA[istar][4][14,0] = np.nan
+            MennickentDATA[istar][4][14,1] = np.nan
+        else:
+            MennickentDATA[istar][4][14,0] = \
+                    float(MennickentT3lines[istar][10])
+            MennickentDATA[istar][4][14,1] = 40.
+
+
+    ### HD names of the stars, from Simbad.
+    MennickentDATA[0][0] = "120324"
+    MennickentDATA[1][0] = "120991"
+    MennickentDATA[2][0] = "105521"
+    MennickentDATA[3][0] = "148259"
+    MennickentDATA[4][0] = "186272"
+    MennickentDATA[5][0] = "178175"
+    MennickentDATA[6][0] = "29441"
+    MennickentDATA[7][0] = "187811"
+
+
+    
+    
+    return GranadaDATA, MennickentDATA
 
 
 
