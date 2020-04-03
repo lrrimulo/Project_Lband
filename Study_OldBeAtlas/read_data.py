@@ -446,6 +446,37 @@ def List_Stars(to_return):
                             ]
 
 
+    if to_return == "vsini":
+
+        vsini =     [
+                    125.,
+                    195.,
+                    432.,
+                    85.,
+                    280.,
+                    328.,
+                    170.,
+                    240.,
+                    140.,
+                    290.,
+                    245.,
+                    300.,
+                    None, 
+                    315.,
+                    None,
+                    None,
+                    105.,
+                    320.,
+                    185.,
+                    None,
+                    100.,
+                    130.,
+                    260.,
+                    95.
+                    ]
+
+
+
 
 
 ############
@@ -453,7 +484,7 @@ def List_Stars(to_return):
 
 def returnDATA_LBAND():
     """
-    
+    Returns 'DATA_LBAND', a list...
     """
 
     ### 

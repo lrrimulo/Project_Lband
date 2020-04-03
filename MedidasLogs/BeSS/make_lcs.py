@@ -44,13 +44,16 @@ months = ["01","02","03","04","05","06","07","08","09","10","11","12"]
 years = ["2007","2008","2009","2010","2011","2012","2013","2014",\
         "2015","2016","2017","2018"]
 
-### 
+### All possible dates of light curves
 dates = [years,months,days]
 dates = [elem for elem in it.product(*dates)]
 
-### 
+### Dates of L-band and WISE measurements
 dateLband = ["2017","10","01"]
 dateWISE = ["2012","03","14"]
+
+### Wavelength of Halpha [microns]
+lbc = spt.hydrogenlinewl(3, 2)*1e6
 
 ### Loop over the folders of data
 for folder_data in folders_data:
@@ -83,8 +86,7 @@ for folder_data in folders_data:
                     array_data[iline,0] = float(linesf0[iline].split()[0])
                     array_data[iline,1] = float(linesf0[iline].split()[1])
 
-                ### Wavelength of Halpha [microns]
-                lbc = spt.hydrogenlinewl(3, 2)*1e6
+
 
                 ### Selecting region for evaluating "noise"
                 if len(array_data[:,0]) >= 2 and \
@@ -99,15 +101,14 @@ for folder_data in folders_data:
 
                 ### If the data contains a region around the Halpha line 
                 ### and a few lines for evaluating the "noise":
+                ### (Minimal resolution around 16000.)
                 if len(array_data[:,0]) >= 2 and \
                         np.nanmin(array_data[:,0]) <= lbc*1e4-40. and \
                         np.nanmax(array_data[:,0]) >= lbc*1e4+40. and \
-                        len(forerr_lambs) >= 10:
+                        len(forerr_lambs) >= 25:
                             
                             
                             
-                    
-
                     files_contents.append([
                         current_file,
                         JD,
@@ -116,23 +117,22 @@ for folder_data in folders_data:
                         "",  ### [4] (PS, errPS) [km/s]
                         ""]) ### [5] [(FWHM, errFWHM) [km/s], (A, errA) [km/s]]
             
-                    #plt.plot(array_data[:,0],array_data[:,1])
-                    #plt.show()
 
-
+                    
                     hwidth = 2000.
     
                     xlp=array_data[:,0]*1e-4 ### lambda [microns]
                     ylp=array_data[:,1]      ### BeSS's flux [unit = ???]
 
 
-
+                    ### For the region where noise will be evaluated:
                     ### Returning an array of velocities [km/s]: 'xplott' 
                     ### and an array with the normalized flux: 'yplott'                    
                     xplott,yplott = spt.lineProf(np.array(forerr_lambs)*1e-4, \
                             np.array(forerr_data), lbc, hwidth=hwidth)
-                    
+                    ### Fitting of straight line in the region 
                     popt, pcov = curve_fit(linear_fit, xplott, yplott)
+                    
                     ### Variance of spectra
                     var = 0.
                     for ifit in range(0,len(xplott)):
@@ -150,12 +150,13 @@ for folder_data in folders_data:
                     ### Equivalent width [Angstroms]
                     ew_ = spt.EWcalc(xplot, yplot, vw=hwidth)
                     ew = ew_*lbc/phc.c.cgs*1e9
-                    
+                    ### Error of EW [Angstroms]
                     err_ew = 2.*hwidth*lbc/phc.c.cgs*1e9*2.*np.sqrt(var)
-                    
                     
                     files_contents[-1][3] = (ew,err_ew)
             
+            
+                    
                     ### Try to calculate the peak separation in [km/s]
                     try:
                         v1,v2 = spt.PScalc(xplot, yplot, vc=0.0, ssize=0.05, \
@@ -165,6 +166,8 @@ for folder_data in folders_data:
                     
                     files_contents[-1][4] = (v2-v1,np.sqrt(var)*abs(v2-v1))
         
+                    
+                    
                     ### Trial of calculating the FWHM: A gaussian is ajusted to 
                     ### the absolute value of the line profile. The FWHM of this 
                     ### gaussian is extracted [km/s]. 
@@ -184,41 +187,65 @@ for folder_data in folders_data:
                     
                     files_contents[-1][5] = [(fwhm,np.sqrt(var)*abs(fwhm)),\
                             (area,np.sqrt(var)*abs(area))]
-
+                            
+                    ### If the modulus of the EW is unrealistically big, 
+                    ### remove the element.
+                    if abs(files_contents[-1][3][0]) > 100.:
+                        del files_contents[-1]
+                        
+                        
+                        
+    ### Turn this on to plot the light curves
     if 1==1:
 
         ### 
-        yearlabel = ["2007","2009","2011","2013","2015","2017","2019"]
+        yearlabel = ["2006","2008","2010","2012","2014","2016","2018",\
+                "2020"]
         yearpos = [jdu.date_to_jd(int(yearlabel[iy]),1,1) \
                 for iy in range(0,len(yearlabel))]
 
+        colors = ["red","orange","green","blue","purple"]
 
 
-
-        plt.figure(figsize=(11,2))
         ### 
-        plt.subplot(111)
+        plt.figure(figsize=(11,4))
+        
+        
+        ### Plate containing EW light curve
+        plt.subplot(211)
+        
+        ### time
         xlc = [files_contents[ifile][1] for ifile \
                 in range(0,len(files_contents))]
+        ### EW [Anstroms]
         ylc = [files_contents[ifile][3][0] for ifile \
                 in range(0,len(files_contents))]
+        ### error EW [Anstroms]
         errylc = [files_contents[ifile][3][1] for ifile \
                 in range(0,len(files_contents))]
         
+        ### time of L-band measurements
         xLband = jdu.date_to_jd(int(dateLband[0]),\
                 int(dateLband[1]),int(dateLband[2]))
-        
+        ### time of WISE measurements
         xWISE = jdu.date_to_jd(int(dateWISE[0]),int(dateWISE[1]),\
                 int(dateWISE[2]))
         
-        ylims = [10.,-60.]
-        plt.plot([xLband,xLband],ylims,color = "brown")
-        plt.plot([xWISE,xWISE],ylims,color = "green")
+        ### 
+        ylims = [np.nanmax(ylc)+0.2*(np.nanmax(ylc)-np.nanmin(ylc)),
+                np.nanmin(ylc)-0.2*(np.nanmax(ylc)-np.nanmin(ylc))]
         
+        ### Plotting L-band and WISE times
+        plt.plot([xLband,xLband],ylims,color = "black",linewidth=2.)
+        plt.plot([xWISE,xWISE],ylims,color = "black",linewidth=2.)
+        
+        ### Plotting EW light curve
         plt.plot(xlc,ylc,color = "black", linewidth = 0.5)
         for ilc in range(0,len(xlc)):
-            plt.errorbar(xlc[ilc],ylc[ilc],yerr = errylc[ilc],color = "black")
+            plt.errorbar(xlc[ilc],ylc[ilc],yerr = errylc[ilc],\
+            color = colors[ilc%len(colors)], linewidth = 0.5)
         
+        ### 
         plt.xticks(yearpos,yearlabel)
         plt.ylabel("$EW\,[\mathrm{A}]$")
         plt.ylim(ylims)
@@ -227,46 +254,61 @@ for folder_data in folders_data:
                 " ("+Starnames[idx_fd]+")")
     
 
-        #plt.subplot(212)
-        #xlc = [files_contents[ifile][1] for ifile \
-        #        in range(0,len(files_contents))]
-        #ylc = [files_contents[ifile][4][0] for ifile \
-        #        in range(0,len(files_contents))]
-        #errylc = [files_contents[ifile][4][1] for ifile \
-        #        in range(0,len(files_contents))]
-        #plt.plot(xlc,ylc,color = "red", linewidth = 0.5)
-        #for ilc in range(0,len(xlc)):
-        #    plt.errorbar(xlc[ilc],ylc[ilc],yerr = errylc[ilc],color = "red")
-        #
-        #
-        #xllc = [files_contents[ifile][1] for ifile \
-        #        in range(0,len(files_contents))]
-        #yllc = [files_contents[ifile][5][0][0] for ifile \
-        #        in range(0,len(files_contents))]
-        #ylims = [0.,2500.]
-        #erryllc = [files_contents[ifile][5][0][1] for ifile \
-        #        in range(0,len(files_contents))]
-        #plt.plot([xLband,xLband],ylims,color = "brown")
-        #plt.plot([xWISE,xWISE],ylims,color = "green")
-        #plt.plot(xllc,yllc,color = "blue", linewidth = 0.5)
-        #for ilc in range(0,len(xllc)):
-        #    plt.errorbar(xllc[ilc],yllc[ilc],yerr = erryllc[ilc],color = "blue")
-        #plt.xticks(yearpos,yearlabel)
-        #plt.ylabel("PS / FWHM [$\mathrm{km\,s^{-1}}$]")
-        #plt.ylim(ylims)
 
-
+        ### Plate containing the evolution of Halpha line profiles
+        plt.subplot(212)
+        
+        xplots = []
+        yplots = []
+        
+        ### Loop over spectra
+        for ielem in range(0,len(files_contents)):
+            
+        
+            hwidth = 1000.
+            array_data = files_contents[ielem][2]
+    
+            xlp=array_data[:,0]*1e-4 ### lambda [microns]
+            ylp=array_data[:,1]      ### BeSS's flux [unit = ???]        
+        
+            ### Returning an array of velocities [km/s]: 'xplot' 
+            ### and an array with the normalized flux: 'yplot'
+            xplot,yplot = spt.lineProf(xlp, ylp, lbc, hwidth=hwidth)        
+        
+            xplots.append(xplot)
+            yplots.append(yplot)
+        
+        ### Loop over spectra
+        for ielem in range(0,len(files_contents)):
+            ### Julian date
+            JD = files_contents[ielem][1]
+            ### A factor to make all spectra of similar size
+            fac = np.nanmax(np.array([np.nanmax(yplots[i]) \
+                    for i in range(0,len(yplots))])-1)-\
+                    np.nanmin(np.array([np.nanmin(yplots[i]) \
+                    for i in range(0,len(yplots))])-1)
+        
+            ### Plotting the spectrum
+            plt.plot((yplots[ielem]-1)*400./fac+JD,xplots[ielem],\
+            linewidth = 0.5, color=colors[ielem%len(colors)])
+        
+        ### 
+        plt.xticks(yearpos,yearlabel)
+        plt.ylabel("vel. [km/s]")
+        plt.ylim([-hwidth,hwidth])        
         ### 
         plt.tight_layout()
         plt.savefig(folder_data.replace("/","")+".png")
-
-
-
-
-    if 1==1:
-    
-    
         
+        plt.close()
+
+
+
+    ### Turn this on to produce the output files
+    if 1==2:
+    
+    
+        ### 
         times = [files_contents[idate][1] for idate \
                 in range(0,len(files_contents))]
                 
