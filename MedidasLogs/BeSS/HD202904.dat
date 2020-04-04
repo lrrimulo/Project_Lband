@@ -56,3 +56,5 @@
 2458351.5 -28.7726772587 2.06330126144 nan nan 382.318646655 4.50306116115
 ##### time in L-band [JD] ; EW [Angstrom] ; errEW [Angstrom] 
 2458027.5 -29.0122672343 1.19545607995
+####### variation timescale [1/day] ; variation label 
+-5.5639260215e-06 STD

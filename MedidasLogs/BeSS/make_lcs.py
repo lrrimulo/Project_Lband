@@ -193,6 +193,65 @@ for folder_data in folders_data:
                     if abs(files_contents[-1][3][0]) > 100.:
                         del files_contents[-1]
                         
+    ### Turn this on to make the linear fit of the region near the 
+    ### L-band measurements.
+    Madefit = False
+    if 1==1:
+
+
+        ### time of L-band measurements
+        xLband = jdu.date_to_jd(int(dateLband[0]),\
+                int(dateLband[1]),int(dateLband[2]))
+        ### time of WISE measurements
+        xWISE = jdu.date_to_jd(int(dateWISE[0]),int(dateWISE[1]),\
+                int(dateWISE[2]))
+        
+        xtime = []
+        yEW = []
+        yerrEW = []
+        ### 
+        for ielem in range(0,len(files_contents)):
+            if xLband-3.*365. <= files_contents[ielem][1] <= xLband:
+                xtime.append(files_contents[ielem][1])
+                yEW.append(files_contents[ielem][3][0])
+                yerrEW.append(files_contents[ielem][3][1])
+        
+        found_elem = False
+        for ielem in range(0,len(files_contents)):
+            if xLband < files_contents[ielem][1] <= xLband+365. \
+                    and not found_elem:
+                xtime.append(files_contents[ielem][1])
+                yEW.append(files_contents[ielem][3][0])
+                yerrEW.append(files_contents[ielem][3][1])
+                found_elem = True
+        
+        
+        
+        if found_elem:
+            try:
+                ### Fitting of straight line in the region 
+                popt, pcov = curve_fit(linear_fit, xtime, yEW)
+                A = popt[0]
+                B = popt[1]
+                
+                if abs(B/linear_fit(xtime[0],A,B)) > 0.0002 and B < 0:
+                    variation_type = "BU"
+                if abs(B/linear_fit(xtime[0],A,B)) > 0.0002 and B > 0:
+                    variation_type = "DISS"
+                if abs(B/linear_fit(xtime[0],A,B)) <= 0.0002:
+                    variation_type = "STD"
+                                    
+                Madefit = True
+            except:
+                variation_type = "???"
+                A = np.nan
+                B = np.nan
+            
+        
+        
+        
+
+
                         
                         
     ### Turn this on to plot the light curves
@@ -245,13 +304,30 @@ for folder_data in folders_data:
             plt.errorbar(xlc[ilc],ylc[ilc],yerr = errylc[ilc],\
             color = colors[ilc%len(colors)], linewidth = 0.5)
         
+        if Madefit:
+            if variation_type == "BU":
+                colore = "purple"
+            if variation_type == "STD":
+                colore = "green"
+            if variation_type == "DISS":
+                colore = "red"
+            plt.plot(xtime,[linear_fit(x,A,B) for x in xtime],\
+                    color=colore,linewidth=1.)
+
+        ### 
+        titleadd = ""
+        if Madefit:
+            titleadd = "      "+\
+                "var. timescale = "+\
+                str(round(B/linear_fit(xtime[0],A,B),5))+" [1/day]"
         ### 
         plt.xticks(yearpos,yearlabel)
+        plt.xlim([np.nanmin(yearpos),np.nanmax(yearpos)])
         plt.ylabel("$EW\,[\mathrm{A}]$")
         plt.ylim(ylims)
         idx_fd = folders_data.index(folder_data)
         plt.title(folder_data.replace("/","").replace("HD","HD ")+\
-                " ("+Starnames[idx_fd]+")")
+                " ("+Starnames[idx_fd]+")"+titleadd)
     
 
 
@@ -278,22 +354,29 @@ for folder_data in folders_data:
             xplots.append(xplot)
             yplots.append(yplot)
         
+        ### A factor to make all spectra of similar size
+        fac = np.nanmax(np.array([np.nanmax(yplots[i]) \
+                for i in range(0,len(yplots))])-1)-\
+                np.nanmin(np.array([np.nanmin(yplots[i]) \
+                for i in range(0,len(yplots))])-1)
+        
         ### Loop over spectra
         for ielem in range(0,len(files_contents)):
             ### Julian date
             JD = files_contents[ielem][1]
-            ### A factor to make all spectra of similar size
-            fac = np.nanmax(np.array([np.nanmax(yplots[i]) \
-                    for i in range(0,len(yplots))])-1)-\
-                    np.nanmin(np.array([np.nanmin(yplots[i]) \
-                    for i in range(0,len(yplots))])-1)
         
             ### Plotting the spectrum
-            plt.plot((yplots[ielem]-1)*400./fac+JD,xplots[ielem],\
+            plt.plot((yplots[ielem]-1.)*400./fac+JD,xplots[ielem],\
             linewidth = 0.5, color=colors[ielem%len(colors)])
+        
+        ### Bar with size one
+        JD = jdu.date_to_jd(2019,10,1)
+        plt.plot([JD,JD-1.*400./fac],[800.,800.],color="black",linewidth=3.)
+
         
         ### 
         plt.xticks(yearpos,yearlabel)
+        plt.xlim([np.nanmin(yearpos),np.nanmax(yearpos)])
         plt.ylabel("vel. [km/s]")
         plt.ylim([-hwidth,hwidth])        
         ### 
@@ -305,7 +388,7 @@ for folder_data in folders_data:
 
 
     ### Turn this on to produce the output files
-    if 1==2:
+    if 1==1:
     
     
         ### 
@@ -357,6 +440,8 @@ for folder_data in folders_data:
                     str(errFWHMs[idate])+"\n")
         f0.write("##### time in L-band [JD] ; EW [Angstrom] ; errEW [Angstrom] \n")
         f0.write(str(xLband)+" "+str(EW_tLb)+" "+str(errEW_tLb)+"\n")
+        f0.write("####### variation timescale [1/day] ; variation label \n")
+        f0.write(str(B/linear_fit(xtime[0],A,B))+" "+variation_type+"\n")
         f0.close()
     
     
