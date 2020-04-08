@@ -65,8 +65,8 @@ def err_alphaL(B__L,lamb1B,lamb2B,R__L,lamb1R,lamb2R,errB__L,errR__L):
 ### 
 def Vegaflux(lamb1,lamb2,Nnpts = 50):
     """
-    Returns the flux of Vega between 'lamb1' [microns] 
-    and 'lamb2' [microns].
+    Returns the flux of Vega [erg s^-1 cm^-2] 
+    between 'lamb1' [microns] and 'lamb2' [microns].
     """
     
     ### Returns the SED of VEGA (9 nm - 160 microns):
@@ -231,6 +231,47 @@ def List_Stars(to_return):
 
 
 
+        
+        
+        
+    ### If to return the Gaia DR2 or Hipparcos distances
+    if to_return == "dist":
+        ### File containing DR2 distances
+        distDR2_file = "distGDR2.dat"
+        ### File containing HIP distances
+        distHIP_file = "distHIP.dat"
+        ### List of star names corresponding to 'HDnames'
+        dist_correspond =   [
+                            "10Cas",
+                            "omiCas",                        
+                            "gammaCas",                        
+                            "phiAnd",                     
+                            "V777Cas",                         
+                            "BkCam",                        
+                            "17Tau",                        
+                            "23Tau",                        
+                            "25Tau",                        
+                            "28Tau",                        
+                            "12Vul",                        
+                            "28Cyg",                        
+                            "V2113Cyg",                        
+                            "V2119Cyg",                        
+                            "V2120Cyg",                        
+                            "V2123Cyg",                        
+                            "V568Cyg",                         
+                            "60Cyg",                        
+                            "upsCyg",                        
+                            "V2162Cyg",                        
+                            "16Peg",                        
+                            "25Peg",                        
+                            "omiAnd",                       
+                            "betPsc"                        
+                            ]
+
+        return distDR2_file, distHIP_file, dist_correspond
+        
+        
+
     ### If to return ...
     if to_return == "Cesar":
         Cesar = "Cesar/DatosBeStarsL_lrrimulo/"
@@ -304,44 +345,6 @@ def List_Stars(to_return):
         
         
     ### If to return ...
-    if to_return == "dist":
-        distDR2_file = "distGDR2.dat"
-        distHIP_file = "distHIP.dat"
-        dist_correspond =   [
-                            "10Cas",
-                            "omiCas",                        
-                            "gammaCas",                        
-                            "phiAnd",                     
-                            "V777Cas",                         
-                            "BkCam",                        
-                            "17Tau",                        
-                            "23Tau",                        
-                            "25Tau",                        
-                            "28Tau",                        
-                            "12Vul",                        
-                            "28Cyg",                        
-                            "V2113Cyg",                        
-                            "V2119Cyg",                        
-                            "V2120Cyg",                        
-                            "V2123Cyg",                        
-                            "V568Cyg",                         
-                            "60Cyg",                        
-                            "upsCyg",                        
-                            "V2162Cyg",                        
-                            "16Peg",                        
-                            "25Peg",                        
-                            "omiAnd",                       
-                            "betPsc"                        
-                            ]
-
-        return distDR2_file, distHIP_file, dist_correspond
-        
-        
-        
-        
-        
-        
-    ### If to return ...
     if to_return == "WISE":
         WISE_file = "AllWISE.dat"
         WISE_correspond =   [
@@ -374,6 +377,7 @@ def List_Stars(to_return):
         return WISE_file, WISE_correspond
 
     
+    ### If to return...
     if to_return == "Vieira2017_results":
         Vieira =    [
                     None,   
@@ -445,7 +449,10 @@ def List_Stars(to_return):
                                     (2.4,0.1,0.1),(-12.1,0.1,0.2)]
                             ]
 
-
+    
+    
+    
+    ### If to return the vsini values according to the BeSS database
     if to_return == "vsini":
 
         vsini =     [
@@ -474,8 +481,40 @@ def List_Stars(to_return):
                     260.,
                     95.
                     ]
+        
+        return vsini
 
-
+    if to_return == "BeSS":
+        BeSSfolder = "BeSS/"
+        ### List of HD names in ascending order
+        HDnames_BeSS =  [
+                        "HD144",   
+                        "HD4180",
+                        "HD5394",  
+                        "HD6811",  
+                        "HD11606", 
+                        "HD20336", 
+                        "HD23302", 
+                        "HD23480", 
+                        "HD23630", 
+                        "HD23862", 
+                        "HD187811",
+                        "HD191610",
+                        "HD193009",
+                        "HD194335",
+                        "HD194883",
+                        "HD195907",
+                        "HD197419",
+                        "HD200310",
+                        "HD202904",
+                        "HD204722",
+                        "HD208057",
+                        "HD210129",
+                        "HD217675",
+                        "HD217891"
+                        ]        
+        
+        return BeSSfolder, HDnames_BeSS
 
 
 
@@ -525,8 +564,10 @@ def returnDATA_LBAND():
                 [], ### [6][4] alphaW3W4, erralphaW3W4
                 []  ### [6][5] MW1, errMW1, MW2, errMW2, MW3, errMW3, MW4, errMW4 
                 ],
-                "", ### [7] Evolutionary status
-                SIMBAD_Spt[i]  ### [8] SIMBAD Spectral type
+                "", ### [7] Variability status
+                SIMBAD_Spt[i],  ### [8] SIMBAD Spectral type
+                "", ### [9] vsini [km/s]
+                ""  ### [10] EW/lambda(Halpha), err_EW/lambda(Halpha)  
                             ]   )
 
 
@@ -586,6 +627,7 @@ def returnDATA_LBAND():
     ### Obtaining data on the Lband lines, to be inserted in 
     ### 'DATA_LBAND[:][4][:]'
 
+    ### 
     Cesar, Cesar_correspond = List_Stars("Cesar")
     files_cesar = glob.glob(data_folder+Cesar+"*")
 
@@ -603,6 +645,7 @@ def returnDATA_LBAND():
 
     ### Storing the data on 'DATA_LBAND[:][4][:]' 
     for ifile in range(0,len(files_cesar)):
+        ### 
         if files_cesar[ifile] != None:
             f0 = open(files_cesar[ifile],"r")
             lines = f0.readlines()
@@ -722,11 +765,13 @@ def returnDATA_LBAND():
                         lamb2B = float(lines[iline+1].split()[iobj]) ### [Angs]
                         lamb1B = float(lines[iline+2].split()[iobj]) ### [Angs]
                         B__L = float(lines[iline+3].split()[iobj])
+                        ### TODO: Cesar should send me the true errors
                         errB__L = 0.1*abs(B__L)
                         
                         lamb2R = float(lines[iline+4].split()[iobj]) ### [Angs]
                         lamb1R = float(lines[iline+5].split()[iobj]) ### [Angs]
                         R__L = float(lines[iline+6].split()[iobj])
+                        ### TODO: Cesar should send me the true errors
                         errR__L = 0.1*abs(R__L)
                         
                         ### 'alpha_L' and error:
@@ -960,13 +1005,69 @@ def returnDATA_LBAND():
                                                  
 
     ############
+    ### TODO: Variability status
+    
     ### 
+    BeSSfolder, HDnames_BeSS = List_Stars("BeSS")
+    
+    for ihd in range(0,len(HDnames_BeSS)):
+    
+        ### 
+        f0 = open(data_folder+BeSSfolder+HDnames_BeSS[ihd]+".dat","r")
+        f0lines = f0.readlines()
+        f0.close()
 
-    for ifile in range(0,len(WISE_correspond)):
-        DATA_LBAND[ifile][7] = "steady"
+        ### 
+        tau0 = (np.nan,"???")
+        tau1 = (np.nan,"???")
+        for iline in range(0,len(f0lines)):
+            if f0lines[iline].split()[0] == "#######":
+                tau0 = (float(f0lines[iline+1].split()[0]),\
+                        f0lines[iline+1].split()[1])
+                tau1 = (float(f0lines[iline+2].split()[0]),\
+                        f0lines[iline+2].split()[1])
+
+        ### 
+        DATA_LBAND[ihd][7] = [tau0,tau1]
+
+
+    ############
+    ### vsini
+    
+    vsini = List_Stars("vsini")
+    for ifile in range(0,len(vsini)):
+        if vsini[ifile] is not None:
+            DATA_LBAND[ifile][9] = vsini[ifile]
+        else:
+            DATA_LBAND[ifile][9] = np.nan
 
 
 
+    ############
+    ### 
+    
+    ### 
+    BeSSfolder, HDnames_BeSS = List_Stars("BeSS")
+    
+    for ihd in range(0,len(HDnames_BeSS)):
+    
+        ### 
+        f0 = open(data_folder+BeSSfolder+HDnames_BeSS[ihd]+".dat","r")
+        f0lines = f0.readlines()
+        f0.close()
+
+        ### 
+        elem0 = np.nan
+        elem1 = np.nan
+        lbdHa = spt.hydrogenlinewl(3, 2)*1e10
+        for iline in range(0,len(f0lines)):
+            if f0lines[iline].split()[0] == "#####":
+                elem0 = float(f0lines[iline+1].split()[1])/lbdHa*1e4
+                elem1 = float(f0lines[iline+1].split()[2])/lbdHa*1e4
+
+        ### 
+        DATA_LBAND[ihd][10] = [elem0,elem1]
+    
 
     return DATA_LBAND
 
@@ -1117,11 +1218,11 @@ def make_table_obs1(DATA_LBAND,fileNAME):
     printline = []
     
     printline.append("\\begin{table*}"+"\n")
-    printline.append("\caption{Main L-band observables of 24 Be stars \label{table_obs1}}"+"\n")
+    printline.append("\caption{Main L-band observables of the 24 Be stars \label{table_obs1}}"+"\n")
     printline.append("\\begin{tabular}{lllllllll}"+"\n")
     printline.append("\hline"+"\n")
-    printline.append("HD name & Object & Spectral & $B_L\,[\mathrm{mag}]$ & $\\alpha_L$ & $F(Hu14)/F(\lambda_B)$ & $F(Hu14)/$ & $F(Hu14)/$ & date [JD] \\\ "+"\n" )
-    printline.append("&  & type &  &  & $[\mathrm{A}]$ & $F(Br\\alpha)$ & $F(Pf\gamma)$ &  \\\ "+"\n")
+    printline.append("HD name & Object & Spectral & $B_L\,[\mathrm{mag}]$ & $\\alpha_L$ & $F(Hu14)/$ & $F(Hu14)/$ & $F(Hu14)/$ & $D_\mathrm{pc}$ \\\ "+"\n" )
+    printline.append("&  & type &  &  & $F(\lambda_B)\, [\mathrm{A}]$ & $F(Br\\alpha)$ & $F(Pf\gamma)$ &  \\\ "+"\n")
     printline.append("\hline"+"\n")
     
 
@@ -1143,16 +1244,16 @@ def make_table_obs1(DATA_LBAND,fileNAME):
         if np.isnan(BL) or np.isnan(errBL):
             BL_write = "-"
         else:
-            BL_write = " $ "+str(round(BL,2))+" \pm "+\
-                    str(round(errBL,2))+" $ "
+            BL_write = " $ "+str(lrr.round_sig(BL,3))+" \pm "+\
+                    str(lrr.round_sig(errBL,2))+" $ "
                     
         alphaL = DATA_LBAND[ifile][5][2][0]
         erralphaL = DATA_LBAND[ifile][5][2][1]
         if np.isnan(alphaL) or np.isnan(erralphaL):
             alphaL_write = "-"
         else:
-            alphaL_write = " $ "+str(round(alphaL,2))+" \pm "+\
-                    str(round(erralphaL,2))+" $ "
+            alphaL_write = " $ "+str(lrr.round_sig(alphaL,3))+" \pm "+\
+                    str(lrr.round_sig(erralphaL,2))+" $ "
                     
         
         F14_FlambB = fluxhumphreys[ifile][14][0]/FlambdaB
@@ -1164,8 +1265,8 @@ def make_table_obs1(DATA_LBAND,fileNAME):
         if np.isnan(F14_FlambB) or np.isnan(errF14_FlambB):
             F14_FlambB_write = "-"
         else:
-            F14_FlambB_write = " $ "+str(round(F14_FlambB,3))+" \pm "+\
-                    str(round(errF14_FlambB,3))+" $ "
+            F14_FlambB_write = " $ "+str(lrr.round_sig(F14_FlambB,3))+" \pm "+\
+                    str(lrr.round_sig(errF14_FlambB,2))+" $ "
 
         F14_FBra = fluxhumphreys[ifile][14][0]/fluxBra[ifile][0]
         errF14_FBra = abs(F14_FBra)*\
@@ -1176,8 +1277,8 @@ def make_table_obs1(DATA_LBAND,fileNAME):
         if np.isnan(F14_FlambB) or np.isnan(errF14_FlambB):
             F14_FBra_write = "-"
         else:
-            F14_FBra_write = " $ "+str(round(F14_FBra,3))+" \pm "+\
-                    str(round(errF14_FBra,3))+" $ "
+            F14_FBra_write = " $ "+str(lrr.round_sig(F14_FBra,3))+" \pm "+\
+                    str(lrr.round_sig(errF14_FBra,2))+" $ "
 
         F14_FPfg = fluxhumphreys[ifile][14][0]/fluxPfg[ifile][0]
         errF14_FPfg = abs(F14_FPfg)*\
@@ -1188,8 +1289,24 @@ def make_table_obs1(DATA_LBAND,fileNAME):
         if np.isnan(F14_FPfg) or np.isnan(errF14_FPfg):
             F14_FPfg_write = "-"
         else:
-            F14_FPfg_write = " $ "+str(round(F14_FPfg,3))+" \pm "+\
-                    str(round(errF14_FPfg,3))+" $ "    
+            F14_FPfg_write = " $ "+str(lrr.round_sig(F14_FPfg,3))+" \pm "+\
+                    str(lrr.round_sig(errF14_FPfg,2))+" $ "    
+
+
+        dist = DATA_LBAND[ifile][2][0]
+        errdist = DATA_LBAND[ifile][2][1]
+        sourcedist = DATA_LBAND[ifile][2][2]
+        if np.isnan(dist) or np.isnan(errdist):
+            dist_write = "-"
+        else:
+            if sourcedist != "DR2":
+                add = "$^*$"
+            else:
+                add = ""
+            dist_write = " $ "+str(lrr.round_sig(dist,3))+" \pm "+\
+                    str(lrr.round_sig(errdist,2))+" $ "+add
+
+
         
         printline.append("HD "+DATA_LBAND[ifile][0]+" & "+DATA_LBAND[ifile][1]+" & "+\
                 DATA_LBAND[ifile][8]+" & "+\
@@ -1198,7 +1315,7 @@ def make_table_obs1(DATA_LBAND,fileNAME):
                 F14_FlambB_write+" & "+\
                 F14_FBra_write+" & "+\
                 F14_FPfg_write+" & "+\
-                str(julian_now)+" \\\ "+"\n")
+                dist_write+" \\\ "+"\n")
                 
 
     printline.append("\end{tabular}"+"\n")
@@ -1220,77 +1337,86 @@ def make_table_obs2(DATA_LBAND,fileNAME):
     printline = []
     
     printline.append("\\begin{table*}"+"\n")
-    printline.append("\caption{Complementary observables of 24 Be stars \label{table_obs2}}"+"\n")
+    printline.append("\caption{Complementary observables of the 24 Be stars \label{table_obs2}}"+"\n")
     printline.append("\\begin{tabular}{lcccccccc}"+"\n")
     printline.append("\hline"+"\n")
-    printline.append("HD name & $F(H\\alpha)$ & $EW/\lambda\,(H\\alpha)$ & $D_\mathrm{pc}$ & $W3$ & $\\alpha_{W1-W2}$ & $\\alpha_{W2-W3}$ & $\\alpha_{W3-W4}$ & Evolutionary \\\ "+"\n")
-    printline.append(" & $[\mathrm{erg\,cm^{-2}\,s^{-1}\,A^{-1}}]$ & $[\\times 10^4]$ &  & [mag] & &  &   & status\\\ "+"\n")
+    printline.append("HD name & $v\sin i$ & $EW/\lambda\,(H\\alpha)$ & $\\tau_0^{-1}$ & $\\tau_1^{-1}$ & $W3$ & $\\alpha_{W1-W2}$ & $\\alpha_{W2-W3}$ & $\\alpha_{W3-W4}$ \\\ "+"\n")
+    printline.append(" & [$\mathrm{km\,s^{-1}}$] & $[\\times 10^4]$ & [$10^5\\times\mathrm{day}^{-1}$] & [$10^5\\times\mathrm{day}^{-1}$] & [mag] & &  &  \\\ "+"\n")
     printline.append("\hline"+"\n")
     
 
 
     for ifile in range(0,len(DATA_LBAND)):
                 
-        FHalpha_write = "-"
-        EWlambHa_write = "-"
-
-        dist = DATA_LBAND[ifile][2][0]
-        errdist = DATA_LBAND[ifile][2][1]
-        sourcedist = DATA_LBAND[ifile][2][2]
-        if np.isnan(dist) or np.isnan(errdist):
-            dist_write = "-"
+        EWlambHa = DATA_LBAND[ifile][10][0]
+        errEWlambHa = DATA_LBAND[ifile][10][1]
+        if np.isnan(EWlambHa) or np.isnan(errEWlambHa):
+            EWlambHa_write = "-"
         else:
-            if sourcedist != "DR2":
-                add = "$^*$"
-            else:
-                add = ""
-            dist_write = " $ "+str(round(dist,0))+" \pm "+\
-                    str(round(errdist,0))+" $ "+add
+            EWlambHa_write = " $ "+str(lrr.round_sig(EWlambHa,3))+" \pm "+\
+                    str(lrr.round_sig(errEWlambHa,2))+" $ "        
+        
+        
+        if not np.isnan(DATA_LBAND[ifile][9]):
+            vsini_write = " $ "+str(int(DATA_LBAND[ifile][9]))+" $ "                    
+        else:
+            vsini_write = "-"
+            
+        tau0_var = DATA_LBAND[ifile][7][0][0]
+        tau1_var = DATA_LBAND[ifile][7][1][0]
+        if np.isnan(tau0_var):
+            tau0_var_write = "-"
+        else:
+            tau0_var_write = " $ "+str(lrr.round_sig(1e5/tau0_var,3))+" $ "    
+        if np.isnan(tau1_var):
+            tau1_var_write = "-"
+        else:
+            tau1_var_write = " $ "+str(lrr.round_sig(1e5/tau1_var,3))+" $ "
+
 
         W3 = DATA_LBAND[ifile][6][1][4]
         errW3 = DATA_LBAND[ifile][6][1][5]
         if np.isnan(W3) or np.isnan(errW3):
             W3_write = "-"
         else:
-            W3_write = " $ "+str(round(W3,2))+" \pm "+\
-                    str(round(errW3,2))+" $ "
+            W3_write = " $ "+str(lrr.round_sig(W3,3))+" \pm "+\
+                    str(lrr.round_sig(errW3,2))+" $ "
                     
         alpha12 = DATA_LBAND[ifile][6][2][0]
         erralpha12 = DATA_LBAND[ifile][6][2][1]
         if np.isnan(alpha12) or np.isnan(erralpha12):
             alpha12_write = "-"
         else:
-            alpha12_write = " $ "+str(round(alpha12,2))+" \pm "+\
-                    str(round(erralpha12,2))+" $ "
+            alpha12_write = " $ "+str(lrr.round_sig(alpha12,3))+" \pm "+\
+                    str(lrr.round_sig(erralpha12,2))+" $ "
 
         alpha23 = DATA_LBAND[ifile][6][3][0]
         erralpha23 = DATA_LBAND[ifile][6][3][1]
         if np.isnan(alpha23) or np.isnan(erralpha23):
             alpha23_write = "-"
         else:
-            alpha23_write = " $ "+str(round(alpha23,2))+" \pm "+\
-                    str(round(erralpha23,2))+" $ "
+            alpha23_write = " $ "+str(lrr.round_sig(alpha23,3))+" \pm "+\
+                    str(lrr.round_sig(erralpha23,2))+" $ "
 
         alpha34 = DATA_LBAND[ifile][6][4][0]
         erralpha34 = DATA_LBAND[ifile][6][4][1]
         if np.isnan(alpha34) or np.isnan(erralpha34):
             alpha34_write = "-"
         else:
-            alpha34_write = " $ "+str(round(alpha34,2))+" \pm "+\
-                    str(round(erralpha34,2))+" $ "
+            alpha34_write = " $ "+str(lrr.round_sig(alpha34,3))+" \pm "+\
+                    str(lrr.round_sig(erralpha34,2))+" $ "
 
-        evol_write = DATA_LBAND[ifile][7]
                             
         
         printline.append("HD "+DATA_LBAND[ifile][0]+" & "+\
-                FHalpha_write+" & "+\
+                vsini_write+" & "+\
                 EWlambHa_write+" & "+\
-                dist_write+" & "+\
+                tau0_var_write+" & "+\
+                tau1_var_write+" & "+\
                 W3_write+" & "+\
                 alpha12_write+" & "+\
                 alpha23_write+" & "+\
-                alpha34_write+" & "+\
-                evol_write+" \\\ "+"\n")
+                alpha34_write+" \\\ "+"\n")
                 
 
     printline.append("\end{tabular}"+"\n")
@@ -1353,8 +1479,8 @@ def make_bigtables_obs(DATA_LBAND,fileNAME):
                             fluxhumphreys[idx,i,1]**2./fluxhumphreys[idx,i,0]**2.+\
                             fluxhumphreys[idx,19,1]**2./fluxhumphreys[idx,19,0]**2.\
                                                 )
-                        columns[icol].append("$ "+str(round(val,2))+" \pm "+\
-                                            str(round(err,2))+" $")
+                        columns[icol].append("$ "+str(lrr.round_sig(val,2))\
+                                        +" \pm "+str(lrr.round_sig(err,1))+" $")
                     else:
                         columns[icol].append("-")
                 
@@ -1381,8 +1507,8 @@ def make_bigtables_obs(DATA_LBAND,fileNAME):
                             ~np.isnan(EWhumphreys[idx,i,1]):
                         val = -EWhumphreys[idx,i,0]/spt.hydrogenlinewl(i, 6)*1e-6
                         err = EWhumphreys[idx,i,1]/spt.hydrogenlinewl(i, 6)*1e-6
-                        columns[icol].append("$ "+str(round(val,2))+" \pm "+\
-                                            str(round(err,2))+" $")
+                        columns[icol].append("$ "+str(lrr.round_sig(val,2))+" \pm "+\
+                                            str(lrr.round_sig(err,1))+" $")
                     else:
                         columns[icol].append("-")
                                         
@@ -1407,8 +1533,8 @@ def make_bigtables_obs(DATA_LBAND,fileNAME):
                     ~np.isnan(EWBra[idx,1]):
                 val = -EWBra[idx,0]/spt.hydrogenlinewl(5, 4)*1e-6
                 err = EWBra[idx,1]/spt.hydrogenlinewl(5, 4)*1e-6
-                columns[icol].append("$ "+str(round(val,2))+" \pm "+\
-                                    str(round(err,2))+" $")
+                columns[icol].append("$ "+str(lrr.round_sig(val,2))+" \pm "+\
+                                    str(lrr.round_sig(err,1))+" $")
             else:
                 columns[icol].append("-")
                                         
@@ -1430,8 +1556,8 @@ def make_bigtables_obs(DATA_LBAND,fileNAME):
                     ~np.isnan(EWPfg[idx,1]):
                 val = -EWPfg[idx,0]/spt.hydrogenlinewl(8, 5)*1e-6
                 err = EWPfg[idx,1]/spt.hydrogenlinewl(8, 5)*1e-6
-                columns[icol].append("$ "+str(round(val,2))+" \pm "+\
-                                    str(round(err,2))+" $")
+                columns[icol].append("$ "+str(lrr.round_sig(val,2))+" \pm "+\
+                                    str(lrr.round_sig(err,1))+" $")
             else:
                 columns[icol].append("-")
                                         

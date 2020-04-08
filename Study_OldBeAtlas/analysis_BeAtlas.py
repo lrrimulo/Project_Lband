@@ -403,11 +403,12 @@ fluxPfg, EWPfg, GFWHMPfg = read_data.LBAND_lines_extract(DATA_LBAND)
 
 
 ### If you want to make the tables of data for the paper, turn this on:
-if 1==2:
+if 1==1:
     lixo = read_data.make_table_obs1(DATA_LBAND,"./tables/table_obs1.out")
     lixo = read_data.make_table_obs2(DATA_LBAND,"./tables/table_obs2.out")
     lixo = read_data.make_bigtables_obs(DATA_LBAND,"./tables/bigtables_obs.out")
-
+    
+    import sys; sys.exit()
 
 
 
