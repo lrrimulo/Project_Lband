@@ -1,7 +1,7 @@
 """
 This is a program used to calculate a lot of observables, derived from 
 the SEDs, from the BeAtlas grid. 
-
+4.
 It reads the grid. Then, it performs a lot of automatic calculations 
 on the grids's files in order to calculate the observables. 
 
@@ -340,7 +340,7 @@ def line_observables(Bralpha,Pfgamma,Brgamma,Humphreys,Brackets,BL,RL,\
         for incs in range(0,len(contents[1])):
             xlp=contents[2][incs,:,0]   ### lambda [microns]
             ylp=contents[2][incs,:,1]   ### HDUST's flux [microns^-1]
-            Nnpts=50    ### this number must be >= 3. A good choice is 50.
+            Nnpts=int(50.00)    ### this number must be >= 3. A good choice is 50.
             
             ### Obtaining F(BL) [erg/s cm^2]
             llamb = np.array([lamb1_BL+(lamb2_BL-lamb1_BL)/\
@@ -400,7 +400,7 @@ filters=[   'bess-u','bess-b','bess-v','bess-r','bess-i',\
             'irac_ch1','irac_ch2','irac_ch3','irac_ch4'
         ]
 
-npts_interp = 50 ### this number must be >= 3. A good choice is 50.
+npts_interp = int(50.00) ### this number must be >= 3. A good choice is 50.
 
 ### defining the vector of alphas
 alphamin = -6.
@@ -448,31 +448,76 @@ def obtaining_mags_and_alphas(all_photflux,all_Mag,all_alphaWISE,\
 
 
         photflux_vec=[]
+        Qphotflux_vec=[]; poldeg_vec=[]
         for j in xrange(0,len(filters)):
             print("Obtaining photon fluxes for filter "+str(filters[j]))
             mu,lamb,flambda,photflux=lrr.fullsed2photonflux(fullsedtest,\
                 sourcetest,filters[j],npts=npts_interp,dist=10.,forcedred=5)
             photflux_vec.append(photflux)
+            
+            print("Obtaining Q photon fluxes for filter "+str(filters[j]))
+            mu,lamb,flambda,qphotflux=lrr.fullsed2photonflux(fullsedtest,\
+                sourcetest,filters[j],npts=npts_interp,dist=10.,forcedred=5,\
+                Q=True)
+            Qphotflux_vec.append(qphotflux)
+            
+            poldeg_auxi = []
+            for i in range(0,len(photflux)):
+                if photflux[i] != 0.:
+                    poldeg_auxi.append(abs(qphotflux[i])/photflux[i])
+                else:
+                    poldeg_auxi.append(np.nan)
+            poldeg_auxi = np.array(poldeg_auxi)
+            poldeg_vec.append(poldeg_auxi)
+        
         all_photflux.append(photflux_vec)
+        all_Qphotflux.append(Qphotflux_vec)
+        all_poldeg.append(poldeg_vec)
+        
 
         Mag_vec=[]
         for j in xrange(0,len(filters)):
             Mag_vec.append(lrr.pogson(photflux_vec[j],zp[j]))
         all_Mag.append(Mag_vec)
-
+        
         alphaWISE_vec=[]
-        alphaW1W2now = [lrr.interpLinND([all_Mag[-1][iwise1][ii]-\
+        
+        alphaW1W2now = []
+        for ii in range(0,len(mu)):
+            if ~np.isnan(all_Mag[-1][iwise1][ii]-all_Mag[-1][iwise2][ii]):
+                alphaW1W2now.append(\
+                        lrr.interpLinND([all_Mag[-1][iwise1][ii]-\
                         all_Mag[-1][iwise2][ii]],\
-                        [colorW1W2],alphavec,allow_extrapolation="no") \
-                        for ii in range(0,len(mu))]
-        alphaW2W3now = [lrr.interpLinND([all_Mag[-1][iwise2][ii]-\
+                        [colorW1W2],alphavec,allow_extrapolation="no")
+                        )
+            else:
+                alphaW1W2now.append(np.nan)
+        
+        
+        alphaW2W3now = []
+        for ii in range(0,len(mu)):
+            if ~np.isnan(all_Mag[-1][iwise2][ii]-all_Mag[-1][iwise3][ii]):
+                alphaW2W3now.append(\
+                        lrr.interpLinND([all_Mag[-1][iwise2][ii]-\
                         all_Mag[-1][iwise3][ii]],\
                         [colorW2W3],alphavec,allow_extrapolation="no") \
-                        for ii in range(0,len(mu))]
-        alphaW3W4now = [lrr.interpLinND([all_Mag[-1][iwise3][ii]-\
+                        )
+            else:
+                alphaW2W3now.append(np.nan)
+                
+                
+        alphaW3W4now = []
+        for ii in range(0,len(mu)):
+            if ~np.isnan(all_Mag[-1][iwise3][ii]-all_Mag[-1][iwise4][ii]):
+                alphaW3W4now.append(\
+                        lrr.interpLinND([all_Mag[-1][iwise3][ii]-\
                         all_Mag[-1][iwise4][ii]],\
                         [colorW3W4],alphavec,allow_extrapolation="no") \
-                        for ii in range(0,len(mu))]
+                        )
+            else:
+                alphaW3W4now.append(np.nan)
+                
+        
         alphaWISE_vec.append(alphaW1W2now)
         alphaWISE_vec.append(alphaW2W3now)
         alphaWISE_vec.append(alphaW3W4now)
@@ -481,16 +526,19 @@ def obtaining_mags_and_alphas(all_photflux,all_Mag,all_alphaWISE,\
 
         print("")
 
-    return all_photflux, all_Mag, all_alphaWISE
+    return all_photflux, all_Qphotflux, all_Mag, all_poldeg, all_alphaWISE
 
 
 ### 
 all_photflux=[]
+all_Qphotflux=[]
 all_Mag=[]
+all_poldeg=[]
 all_alphaWISE=[]
 ### Comment the next command lines if you want to skip this part.
 ### (But remember that this part is necessary in the output writing part.)
-all_photflux, all_Mag, all_alphaWISE = obtaining_mags_and_alphas(\
+all_photflux,all_Qphotflux, all_Mag, all_poldeg, all_alphaWISE = \
+        obtaining_mags_and_alphas(\
         all_photflux,all_Mag,all_alphaWISE,\
         files_fullsed_new, files_source_new)
 
@@ -528,6 +576,9 @@ all_vsini = []
 ### (But remember that this part is necessary in the output writing part.)
 all_vsini = obtaining_vsini(all_vsini, files_fullsed_new, fullsed_contents)
 
+print(all_vsini)
+
+
 
 #############################
 ### Writing in the external file
@@ -555,15 +606,21 @@ f0.write("# * COSI: contains the cosine of the inclination angle i, "+"\n")
 f0.write("# and it marks the beginning of the subfolder of parameters for that model and "+"\n")
 f0.write("# inclination."+"\n")
 f0.write("# \n")
+f0.write("# * VSINI: contains vsini [km/s] "+"\n")
 f0.write("# * SNRATIOS: contains tryads of: left boundary [microns], right boundary [microns], "+"\n")
 f0.write("# S/N ratio obtained (or tried) from the SEDs between the previous two boundaries."+"\n")
 f0.write("# * UBVRI: Contains the absolute magnitudes U, B, V, R, I [mag]."+"\n")
+f0.write("# * poldegUBVRI: Contains the polarization degrees in U, B, V, R, I."+"\n")
 f0.write("# * JHK: Contains the absolute magnitudes J, H, K [mag]."+"\n")
+f0.write("# * poldegJHK: Contains the polarization degrees in J, H, K."+"\n")
 f0.write("# * HALPHA_SOAR: Contains the absolute magnitude from SOAR's Halpha filter [mag], "+"\n")
 f0.write("# under the assumption that the magnitude of Vega is defined to be 9999 mag."+"\n")
+f0.write("# * poldegHALPHA_SOAR: Contains the polarization degrees from SOAR's Halpha filter."+"\n")
 f0.write("# * WISEfilters: Contains the absolute magnitudes W1, W2, W3, W4 [mag]."+"\n")
+f0.write("# * poldegWISEfilters: Contains the polarization degrees W1, W2, W3, W4."+"\n")
 f0.write("# * ALPHA_WISE: contains the spectral indexes associated with W1-W2, W2-W3, W3-W4."+"\n")
 f0.write("# * IRAC_filters: Contains the absolute magnitudes in the four IRAC filters."+"\n")
+f0.write("# * poldegIRAC_filters: Contains the polarization degrees in the four IRAC filters."+"\n")
 f0.write("# * LINE_XXX: For the specific line XXX, contains: flux (distance = 10pc) [erg/s cm2], "+"\n")
 f0.write("# EW [angstroms], peak separation [km/s], a type of gaussian FWHM [km/s], "+"\n")
 f0.write("# area of the gaussian fit [km/s]."+"\n")
@@ -613,6 +670,10 @@ for ifile in xrange(0,len(files_fullsed_new)):
     for incs in range(0,len(contents[1])):
         f0.write("    COSI "+\
             str(contents[1][incs])+"\n")
+
+        ### Printing the vsini [km/s]
+        f0.write("        VSINI "+\
+            str(all_vsini[ifile][incs])+"\n")
         
         ### Printing the evaluated S/N ratio of the models
         ### It contains series of tryads: 
@@ -634,14 +695,29 @@ for ifile in xrange(0,len(files_fullsed_new)):
             str(all_Mag[ifile][2][incs])+" "+\
             str(all_Mag[ifile][3][incs])+" "+\
             str(all_Mag[ifile][4][incs])+"\n")
+        ### Printing the polarization degrees in UBVRI
+        f0.write("        poldegUBVRI "+\
+            str(all_poldeg[ifile][0][incs])+" "+\
+            str(all_poldeg[ifile][1][incs])+" "+\
+            str(all_poldeg[ifile][2][incs])+" "+\
+            str(all_poldeg[ifile][3][incs])+" "+\
+            str(all_poldeg[ifile][4][incs])+"\n")
         ### Printing the absolute JHK magnitudes [mag] (dist = 10 pc)
         f0.write("        JHK "+\
             str(all_Mag[ifile][5][incs])+" "+\
             str(all_Mag[ifile][6][incs])+" "+\
             str(all_Mag[ifile][7][incs])+"\n")
+        ### Printing the polarization degrees in JHK
+        f0.write("        poldegJHK "+\
+            str(all_poldeg[ifile][5][incs])+" "+\
+            str(all_poldeg[ifile][6][incs])+" "+\
+            str(all_poldeg[ifile][7][incs])+"\n")
         ### Printing the absolute Ha (SOAR) magnitude [mag] (dist = 10 pc)
         ### (See my notes on this non-standard filter.)
         f0.write("        HALPHA_SOAR "+\
+            str(all_Mag[ifile][8][incs])+"\n")
+        ### Printing the polarization degree in Ha (SOAR)
+        f0.write("        poldegHALPHA_SOAR "+\
             str(all_Mag[ifile][8][incs])+"\n")
         ### Printing the absolute WISE magnitudes [mag] (dist = 10 pc)
         f0.write("        WISE_filters "+\
@@ -649,6 +725,12 @@ for ifile in xrange(0,len(files_fullsed_new)):
             str(all_Mag[ifile][10][incs])+" "+\
             str(all_Mag[ifile][11][incs])+" "+\
             str(all_Mag[ifile][12][incs])+"\n")
+        ### Printing the polarization degrees in WISE
+        f0.write("        poldegWISE_filters "+\
+            str(all_poldeg[ifile][9][incs])+" "+\
+            str(all_poldeg[ifile][10][incs])+" "+\
+            str(all_poldeg[ifile][11][incs])+" "+\
+            str(all_poldeg[ifile][12][incs])+"\n")
         ### Printing the alphaW1W2, alphaW2W3 and alphaW3W4
         f0.write("        ALPHA_WISE "+\
             str(all_alphaWISE[ifile][0][incs])+" "+\
@@ -660,6 +742,12 @@ for ifile in xrange(0,len(files_fullsed_new)):
             str(all_Mag[ifile][14][incs])+" "+\
             str(all_Mag[ifile][15][incs])+" "+\
             str(all_Mag[ifile][16][incs])+"\n")
+        ### Printing the polarization degrees in IRAC
+        f0.write("        poldegIRAC_filters "+\
+            str(all_poldeg[ifile][13][incs])+" "+\
+            str(all_poldeg[ifile][14][incs])+" "+\
+            str(all_poldeg[ifile][15][incs])+" "+\
+            str(all_poldeg[ifile][16][incs])+"\n")
         
         ### Printing the derived quantities for each line:
         ### line flux (dist = 10 pc) [erg/s cm^2]

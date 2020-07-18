@@ -30,6 +30,7 @@ def read_everything():
     """
 
     ### Paths to the fullsed, source and temperature files:
+    #fullsed_path = '../OldBeAtlas/fullsed_v3/'
     fullsed_path = '../OldBeAtlas/fullsed_v2/'
     #fullsed_path = '../OldBeAtlas/fullsed/'
     source_path = '../OldBeAtlas/source/'

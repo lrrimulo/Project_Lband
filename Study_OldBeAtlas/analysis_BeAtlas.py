@@ -9,7 +9,7 @@ import pyhdust.spectools as spt
 import pyhdust.lrr as lrr
 import matplotlib.pyplot as plt
 import emcee
-import corner
+import corner as corner
 import glob as glob
 import read_data as read_data
 import read_everything as read_everything
@@ -48,12 +48,14 @@ SOURCE_read = []
 ### The lists of observables of the 4 model parameters + cosi
 SNRATIOS_read = []
 ###    
-UBVRI_read = []
-JHK_read = []
-HALPHA_SOAR_read = []
-WISE_filters_read = []
+VSINI_read = []
+### 
+UBVRI_read = []; poldegUBVRI_read = []
+JHK_read = []; poldegJHK_read = []
+HALPHA_SOAR_read = []; poldegHALPHA_SOAR_read = []
+WISE_filters_read = []; poldegWISE_filters_read = []
 ALPHA_WISE_read = []
-IRAC_filters_read = []
+IRAC_filters_read = []; poldegIRAC_filters_read = []
 ### 
 LINE_HALPHA_read = []
 LINE_HBETA_read = []
@@ -134,12 +136,19 @@ for ilinha in range(0,len(g0linhas)):
     ### 
     reading_procedure(SNRATIOS_read,"SNRATIOS",len(g0linhas[ilinha]))
     ###
+    reading_procedure(VSINI_read,"VSINI",1+1)
+    ### 
     reading_procedure(UBVRI_read,"UBVRI",1+5)
+    reading_procedure(poldegUBVRI_read,"poldegUBVRI",1+5)
     reading_procedure(JHK_read,"JHK",1+3)
+    reading_procedure(poldegJHK_read,"poldegJHK",1+3)
     reading_procedure(HALPHA_SOAR_read,"HALPHA_SOAR",1+1)
+    reading_procedure(poldegHALPHA_SOAR_read,"poldegHALPHA_SOAR",1+1)
     reading_procedure(WISE_filters_read,"WISE_filters",1+4)
+    reading_procedure(poldegWISE_filters_read,"poldegWISE_filters",1+4)
     reading_procedure(ALPHA_WISE_read,"ALPHA_WISE",1+3)
     reading_procedure(IRAC_filters_read,"IRAC_filters",1+4)
+    reading_procedure(poldegIRAC_filters_read,"poldegIRAC_filters",1+4)
     ###
     reading_procedure(LINE_HALPHA_read,"LINE_HALPHA",1+5)
     reading_procedure(LINE_HBETA_read,"LINE_HBETA",1+5)
@@ -216,12 +225,19 @@ if len(SNRATIOS_read) > 0:
 else:
     SNRATIOS = attribution_procedure5(SNRATIOS_read,0)
 ### 
+VSINI = attribution_procedure5(VSINI_read,1)
+### 
 UBVRI = attribution_procedure5(UBVRI_read,5)
+poldegUBVRI = attribution_procedure5(poldegUBVRI_read,5)
 JHK = attribution_procedure5(JHK_read,3)
+poldegJHK = attribution_procedure5(poldegJHK_read,3)
 HALPHA_SOAR = attribution_procedure5(HALPHA_SOAR_read,1)
+poldegHALPHA_SOAR = attribution_procedure5(poldegHALPHA_SOAR_read,1)
 WISE = attribution_procedure5(WISE_filters_read,4)
+poldegWISE = attribution_procedure5(poldegWISE_filters_read,4)
 ALPHA_WISE = attribution_procedure5(ALPHA_WISE_read,3)
 IRAC = attribution_procedure5(IRAC_filters_read,4)
+poldegIRAC = attribution_procedure5(poldegIRAC_filters_read,4)
 ###
 LINE_HALPHA = attribution_procedure5(LINE_HALPHA_read,5)
 LINE_HBETA = attribution_procedure5(LINE_HBETA_read,5)
@@ -408,8 +424,135 @@ if 1==1:
     lixo = read_data.make_table_obs2(DATA_LBAND,"./tables/table_obs2.out")
     lixo = read_data.make_bigtables_obs(DATA_LBAND,"./tables/bigtables_obs.out")
     
+    #print(read_data.Vegaflux(3.41,3.47)/(3.47e4-3.41e4))
+    #print(read_data.Vegaflux(3.93,4.00)/(4.00e4-3.93e4))
+    
+
+
+
+
+if 1==2:
+    
+    from scipy.optimize import curve_fit
+    
+    def linear_funct(x,A):
+        
+        return 1.+A*x
+    
+    xplt = []
+    yplt = []
+    for ifile in range(0,len(fluxhumphreys)):
+
+        num19 = 19
+        lambdass = [spt.hydrogenlinewl(i, 6)*1e10 for i in range(14,26)]
+        lambda19 = spt.hydrogenlinewl(num19, 6)*1e10    
+
+        fluxrr = [fluxhumphreys[ifile][i,0]/fluxhumphreys[ifile][num19,0] \
+                for i in range(14,26)]
+        auxif = []
+        auxil = []
+        for ifl in range(0,len(fluxrr)):
+            if ~np.isnan(fluxrr[ifl]):
+                auxil.append(lambdass[ifl])
+                auxif.append(fluxrr[ifl])
+        if len(auxil) > 0:
+            lambdass = [x for x in auxil]
+            fluxrr = [x for x in auxif]
+        
+                
+        
+            popt, pcov = curve_fit(linear_funct, \
+                    [x-lambda19 for x in lambdass],fluxrr,p0=[0.])
+    
+
+            xplt.append(np.arcsinh(popt[0]*(lambdass[0]-lambda19)))
+            yplt.append(np.arcsinh(2e4/DATA_LBAND[ifile][7][1][0]))
+            #yplt.append(DATA_LBAND[ifile][10][0])
+            #yplt.append(DATA_LBAND[ifile][9])
+            #yplt.append(DATA_LBAND[ifile][5][3][0])
+            
+            plt.annotate("HD "+DATA_LBAND[ifile][0],[xplt[-1],yplt[-1]])
+
+    plt.scatter(xplt,yplt)
+    plt.show()
+            
     import sys; sys.exit()
 
+
+
+if 1==2:
+
+    xxx = [x[10][0] for x in DATA_LBAND]
+    yyy = [x[9] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("EW$/\lambda$")
+    plt.ylabel("$v\sin i\,[\\mathrm{km\,s^{-1}}]$")
+    plt.show()
+    
+    xxx = [x[6][5][4] for x in DATA_LBAND]
+    yyy = [2e4/x[7][0][0] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("$M_{W3}$")
+    plt.ylabel("$\\arcsinh(2\\times 10^4 \\tau_0^{-1})$")
+    plt.show()
+
+    xxx = [x[5][3][0] for x in DATA_LBAND]
+    yyy = [2e4/x[7][1][0] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("$M_{B_L}$")
+    plt.ylabel("$\\arcsinh(2\\times 10^4 \\tau_1^{-1})$")
+    plt.show()
+    
+    xxx = [x[5][3][0] for x in DATA_LBAND]
+    yyy = [x[10][0] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("$M_{B_L}$")
+    plt.ylabel("EW$/\lambda$")
+    plt.show()
+
+    xxx = [x[5][4][0] for x in DATA_LBAND]
+    yyy = [x[10][0] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("$\\alpha_L$")
+    plt.ylabel("EW$/\lambda$")
+    plt.show()
+
+    xxx = [x[10][0] for x in DATA_LBAND]
+    yyy = [2e4/x[7][1][0] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("EW$/\lambda$")
+    plt.ylabel("$\\arcsinh(2\\times 10^4 \\tau_1^{-1})$")
+    plt.show()
+
+    xxx = [x[5][4][0] for x in DATA_LBAND]
+    yyy = [x[6][4][0] for x in DATA_LBAND]
+    tex = ["HD "+x[0] for x in DATA_LBAND]
+    plt.scatter(xxx,yyy)
+    for i in range(0,len(xxx)):
+        plt.annotate(tex[i],[xxx[i],yyy[i]])
+    plt.xlabel("$\\alpha_L$")
+    plt.ylabel("$\\alpha_{W3W4}$")
+    plt.show()
+    
+    import sys; sys.exit()
 
 
 
@@ -543,14 +686,25 @@ def lnprior(theta,other):
 
 
 
+
+
+
+
+
+
+
+
 ###########
 ### Uncheck this to generate output file with the prior distribution and 
 ### some derived quantities:
 if 1==2:
     
-    ### Output file containing the walkers and derived quantities for 
+    ### Output files containing the walkers and derived quantities for 
     ### the prior:
+        ### prior with IMF
     prior_file = "prior_and_derivs.out"
+        ### prior without IMF
+    prior2_file = "prior2_and_derivs.out"
 
 
     ndim = 5
@@ -597,13 +751,33 @@ if 1==2:
             return -2.3*np.log(M) + np.log(fbe) \
                         - 0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
 
+    ### 
+    def lnprior2_only(theta,other):
+   
 
-    #means = np.random.rand(ndim)
-    #p0 = np.random.rand(nwalkers, ndim)
 
+        ### Se definen los parametros de la Prior
+        n = theta[0]
+        logSig = theta[1]
+        M = theta[2]
+        W = np.sqrt(2.*(theta[3]-1.))
+        cosi = theta[4]
+   
+
+   
+        thetab = thetabig_only(n,logSig,M,W,cosi)
+   
+        if thetab == 0:
+            return -np.inf
+        else:
+            mean_W = other[0]
+            std_W = other[1]
+            fbe = fBe(M,1.)
+            return np.log(fbe)-0.5*(W-mean_W)*(W-mean_W)/std_W/std_W
+
+    ### Parameters for the distribution of Rivinius et al. 2006
     mean_W = 0.81
     std_W = 0.12
-
     means = [mean_W, std_W]
 
     ### Choose an initial set of positions for the walkers.
@@ -619,12 +793,13 @@ if 1==2:
             (thetalims[idim][1]-thetalims[idim][0])*np.random.rand() \
             for idim in range(0,len(thetalims))]) for i in range(nwalkers)]
     
+    
+    ### Running emcee for the prior with IMF
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprior_only,args=[means])
     
-    print("Sampling prior...")
+    print("Sampling prior #1...")
     state = sampler.run_mcmc(p0, Nchain)
     print("Sampling DONE.")
-
 
 
     ### Uncheck this to see the evolution of the probabilities 
@@ -653,6 +828,36 @@ if 1==2:
 
 
 
+    ### Running emcee for the prior without IMF
+    sampler2 = emcee.EnsembleSampler(nwalkers, ndim, lnprior2_only,args=[means])
+    
+    print("Sampling prior #2...")
+    state2 = sampler2.run_mcmc(p0, Nchain)
+    print("Sampling DONE.")
+
+    ### Uncheck this to see the evolution of the probabilities 
+    if 1==2:
+        lnprobability = sampler2.lnprobability
+    
+        poslnprob=np.arange(1,len(lnprobability[0])+1)
+        fig=plt.figure(figsize=(6,6))
+        ax=plt.subplot(1,1,1)
+            
+        for iwalker in range(0,len(lnprobability)):
+            plt.plot(poslnprob,[np.arcsinh(lnprobability[iwalker][j]) \
+                for j in range(0,len(lnprobability[0]))], \
+                color='black', linewidth=0.05, linestyle='-')
+        plt.ylabel("$\\arcsinh(\\ln(\\mathrm{prob}))$")
+        plt.xlabel("position in the chain")
+        plt.show()
+
+    
+    samples2 = sampler2.chain[:, nburnin:, :].reshape((-1, ndim))
+    if 1==2:
+        fig = corner.corner(samples2, \
+        labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
+        "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$"], bins=60)
+        plt.show()
 
 
 
@@ -672,28 +877,96 @@ if 1==2:
     ndim = len(axis)
 
     ### Attributing values for every element of the grid
+    vals_B = []
+    vals_V = []
+    vals_R = []
+    vals_I = []
+    vals_poldegB = []
+    vals_poldegV = []
+    vals_poldegR = []
+    vals_poldegI = []
+    vals_vsini = []
+    vals_alphaW1W2 = []
+    vals_alphaW2W3 = []
     vals_alphaW3W4 = []
+    vals_MW1 = []
+    vals_MW2 = []
     vals_MW3 = []
+    vals_MW4 = []
     vals_alphaL = []
     vals_MBL = []
-    vals_H14 = []
+    vals_Halpha = []; vals_FWHMHalpha = []; vals_EWHalpha = []; vals_PSHalpha = []
+    vals_Hu14 = []; vals_FWHMHu14 = []
+    vals_Hu15 = []; vals_FWHMHu15 = []
+    vals_Hu16 = []; vals_FWHMHu16 = []
+    #vals_Hu17 = []; vals_FWHMHu17 = []
+    vals_Hu18 = []; vals_FWHMHu18 = []
+    vals_Hu19 = []; vals_FWHMHu19 = []
+    vals_Hu20 = []; vals_FWHMHu20 = []
+    vals_Hu21 = []; vals_FWHMHu21 = []
+    vals_Hu22 = []; vals_FWHMHu22 = []
+    vals_Hu23 = []; vals_FWHMHu23 = []
+    vals_Hu24 = []; vals_FWHMHu24 = []
+    vals_Hu25 = []; vals_FWHMHu25 = []
     vals_Bra = []
     vals_Pfg = []
     vals_FBL = []
-    i4 = obpar.index("1.40")
     for i1 in range(0,len(npar_vals)):
         for i2 in range(0,len(logsigpar_vals)):
             for i3 in range(0,len(Mpar_vals)):
-                for i4_notused in range(0,len(obpar_vals)):
+                for i4 in range(0,len(obpar_vals)):
                     for i5 in range(0,len(cosipar_vals)):
+                        vals_B.append(UBVRI[i1,i2,i3,i4,i5,1])
+                        vals_V.append(UBVRI[i1,i2,i3,i4,i5,2])
+                        vals_R.append(UBVRI[i1,i2,i3,i4,i5,3])
+                        vals_I.append(UBVRI[i1,i2,i3,i4,i5,4])
+                        vals_poldegB.append(poldegUBVRI[i1,i2,i3,i4,i5,1])
+                        vals_poldegV.append(poldegUBVRI[i1,i2,i3,i4,i5,2])
+                        vals_poldegR.append(poldegUBVRI[i1,i2,i3,i4,i5,3])
+                        vals_poldegI.append(poldegUBVRI[i1,i2,i3,i4,i5,4])
+                        vals_vsini.append(VSINI[i1,i2,i3,i4,i5,0])
+                        vals_alphaW1W2.append(ALPHA_WISE[i1,i2,i3,i4,i5,0])
+                        vals_alphaW2W3.append(ALPHA_WISE[i1,i2,i3,i4,i5,1])
                         vals_alphaW3W4.append(ALPHA_WISE[i1,i2,i3,i4,i5,2])
+                        vals_MW1.append(WISE[i1,i2,i3,i4,i5,0])
+                        vals_MW2.append(WISE[i1,i2,i3,i4,i5,1])
                         vals_MW3.append(WISE[i1,i2,i3,i4,i5,2])
+                        vals_MW4.append(WISE[i1,i2,i3,i4,i5,3])
                         vals_alphaL.append(ALPHAL[i1,i2,i3,i4,i5])
                         vals_MBL.append(MBL[i1,i2,i3,i4,i5])
-                        vals_H14.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0])
+                        vals_Halpha.append(LINE_HALPHA[i1,i2,i3,i4,i5,0])
+                        vals_EWHalpha.append(LINE_HALPHA[i1,i2,i3,i4,i5,1])
+                        vals_PSHalpha.append(LINE_HALPHA[i1,i2,i3,i4,i5,2])
+                        vals_FWHMHalpha.append(LINE_HALPHA[i1,i2,i3,i4,i5,3])
+                        vals_Hu14.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,0])
+                        vals_Hu15.append(LINE_HUMPHREY15[i1,i2,i3,i4,i5,0])
+                        vals_Hu16.append(LINE_HUMPHREY16[i1,i2,i3,i4,i5,0])
+                        #vals_Hu17.append(LINE_HUMPHREY17[i1,i2,i3,i4,i5,0])
+                        vals_Hu18.append(LINE_HUMPHREY18[i1,i2,i3,i4,i5,0])
+                        vals_Hu19.append(LINE_HUMPHREY19[i1,i2,i3,i4,i5,0])
+                        vals_Hu20.append(LINE_HUMPHREY20[i1,i2,i3,i4,i5,0])
+                        vals_Hu21.append(LINE_HUMPHREY21[i1,i2,i3,i4,i5,0])
+                        vals_Hu22.append(LINE_HUMPHREY22[i1,i2,i3,i4,i5,0])
+                        vals_Hu23.append(LINE_HUMPHREY23[i1,i2,i3,i4,i5,0])
+                        vals_Hu24.append(LINE_HUMPHREY24[i1,i2,i3,i4,i5,0])
+                        vals_Hu25.append(LINE_HUMPHREY25[i1,i2,i3,i4,i5,0])
+                        vals_FWHMHu14.append(LINE_HUMPHREY14[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu15.append(LINE_HUMPHREY15[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu16.append(LINE_HUMPHREY16[i1,i2,i3,i4,i5,3])
+                        #vals_FWHMHu17.append(LINE_HUMPHREY17[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu18.append(LINE_HUMPHREY18[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu19.append(LINE_HUMPHREY19[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu20.append(LINE_HUMPHREY20[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu21.append(LINE_HUMPHREY21[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu22.append(LINE_HUMPHREY22[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu23.append(LINE_HUMPHREY23[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu24.append(LINE_HUMPHREY24[i1,i2,i3,i4,i5,3])
+                        vals_FWHMHu25.append(LINE_HUMPHREY25[i1,i2,i3,i4,i5,3])
                         vals_Bra.append(LINE_BRALPHA[i1,i2,i3,i4,i5,0])
                         vals_Pfg.append(LINE_PFGAMMA[i1,i2,i3,i4,i5,0])
                         vals_FBL.append(BL_FLUX[i1,i2,i3,i4,i5,0])
+                
+                
                             
     ### Turn this on to fill the NaNs in the values (probably due to 
     ### the fact that the grid was not entirely computed).
@@ -707,181 +980,446 @@ if 1==2:
         tp = "linear"
         ### Allowing extrapolation for the filling the NaNs procedure
         allow_extrapolation_fill = "yes"
-        ### filling the NaNs of alphaW3W4
-        vals_alphaW3W4_name = "vals_alphaW3W4"
-        vals_alphaW3W4 = fillingNaNs(folder_filledNaNs,\
-                        vals_alphaW3W4_name,axis,\
-                        vals_alphaW3W4,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of MW3
-        vals_MW3_name = "vals_MW3"
-        vals_MW3 = fillingNaNs(folder_filledNaNs,\
-                        vals_MW3_name,axis,\
-                        vals_MW3,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of alphaL
-        vals_alphaL_name = "vals_alphaL"
-        vals_alphaL = fillingNaNs(folder_filledNaNs,\
-                        vals_alphaL_name,axis,\
-                        vals_alphaL,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of MBL
-        vals_MBL_name = "vals_MBL"
-        vals_MBL = fillingNaNs(folder_filledNaNs,\
-                        vals_MBL_name,axis,\
-                        vals_MBL,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of H14
-        vals_H14_name = "vals_H14"
-        vals_H14 = fillingNaNs(folder_filledNaNs,\
-                        vals_H14_name,axis,\
-                        vals_H14,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of Br alpha
-        vals_Bra_name = "vals_Bra"
-        vals_Bra = fillingNaNs(folder_filledNaNs,\
-                        vals_Bra_name,axis,\
-                        vals_Bra,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of Pf gamma
-        vals_Pfg_name = "vals_Pfg"
-        vals_Pfg = fillingNaNs(folder_filledNaNs,\
-                        vals_Pfg_name,axis,\
-                        vals_Pfg,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
-        ### filling the NaNs of BL flux
-        vals_FBL_name = "vals_FBL"
-        vals_FBL = fillingNaNs(folder_filledNaNs,\
-                        vals_FBL_name,axis,\
-                        vals_FBL,\
-                        tp,allow_extrapolation_fill,prints,overwrite = False)
+        
+        ### filling the NaNs of XXXX
+        def filling_NaNs_XXXX(vals_XXXX,vals_XXXX_name):
+            
+            vals_XXXX = fillingNaNs(folder_filledNaNs,\
+                    vals_XXXX_name,axis,\
+                    vals_XXXX,\
+                    tp,allow_extrapolation_fill,prints,overwrite = False)
+            
+            return vals_XXXX
+        
+        ### Execution...
+        vals_B = filling_NaNs_XXXX(vals_B,"vals_B")
+        vals_V = filling_NaNs_XXXX(vals_V,"vals_V")
+        vals_R = filling_NaNs_XXXX(vals_R,"vals_R")
+        vals_I = filling_NaNs_XXXX(vals_I,"vals_I")
+        vals_poldegB = filling_NaNs_XXXX(vals_poldegB,"vals_poldegB")
+        vals_poldegV = filling_NaNs_XXXX(vals_poldegV,"vals_poldegV")
+        vals_poldegR = filling_NaNs_XXXX(vals_poldegR,"vals_poldegR")
+        vals_poldegI = filling_NaNs_XXXX(vals_poldegI,"vals_poldegI")
+        vals_vsini = filling_NaNs_XXXX(vals_vsini,"vals_vsini")
+        vals_alphaW1W2 = filling_NaNs_XXXX(vals_alphaW1W2,"vals_alphaW1W2")
+        vals_alphaW2W3 = filling_NaNs_XXXX(vals_alphaW2W3,"vals_alphaW2W3")
+        vals_alphaW3W4 = filling_NaNs_XXXX(vals_alphaW3W4,"vals_alphaW3W4")
+        vals_MW1 = filling_NaNs_XXXX(vals_MW1,"vals_MW1")
+        vals_MW2 = filling_NaNs_XXXX(vals_MW2,"vals_MW2")
+        vals_MW3 = filling_NaNs_XXXX(vals_MW3,"vals_MW3")
+        vals_MW4 = filling_NaNs_XXXX(vals_MW4,"vals_MW4")
+        vals_alphaL = filling_NaNs_XXXX(vals_alphaL,"vals_alphaL")
+        vals_MBL = filling_NaNs_XXXX(vals_MBL,"vals_MBL")
+        vals_Halpha = filling_NaNs_XXXX(vals_Halpha,"vals_Halpha")
+        vals_EWHalpha = filling_NaNs_XXXX(vals_EWHalpha,"vals_EWHalpha")
+        vals_PSHalpha = filling_NaNs_XXXX(vals_PSHalpha,"vals_PSHalpha")
+        vals_FWHMHalpha = filling_NaNs_XXXX(vals_FWHMHalpha,"vals_FWHMHalpha")
+        vals_Hu14 = filling_NaNs_XXXX(vals_Hu14,"vals_Hu14")
+        vals_Hu15 = filling_NaNs_XXXX(vals_Hu15,"vals_Hu15")
+        vals_Hu16 = filling_NaNs_XXXX(vals_Hu16,"vals_Hu16")
+#        vals_Hu17 = filling_NaNs_XXXX(vals_Hu17,"vals_Hu17")
+        vals_Hu18 = filling_NaNs_XXXX(vals_Hu18,"vals_Hu18")
+        vals_Hu19 = filling_NaNs_XXXX(vals_Hu19,"vals_Hu19")
+        vals_Hu20 = filling_NaNs_XXXX(vals_Hu20,"vals_Hu20")
+        vals_Hu21 = filling_NaNs_XXXX(vals_Hu21,"vals_Hu21")
+        vals_Hu22 = filling_NaNs_XXXX(vals_Hu22,"vals_Hu22")
+        vals_Hu23 = filling_NaNs_XXXX(vals_Hu23,"vals_Hu23")
+        vals_Hu24 = filling_NaNs_XXXX(vals_Hu24,"vals_Hu24")
+        vals_Hu25 = filling_NaNs_XXXX(vals_Hu25,"vals_Hu25")
+        vals_FWHMHu14 = filling_NaNs_XXXX(vals_FWHMHu14,"vals_FWHMHu14")
+        vals_FWHMHu15 = filling_NaNs_XXXX(vals_FWHMHu15,"vals_FWHMHu15")
+        vals_FWHMHu16 = filling_NaNs_XXXX(vals_FWHMHu16,"vals_FWHMHu16")
+#        vals_FWHMHu17 = filling_NaNs_XXXX(vals_FWHMHu17,"vals_FWHMHu17")
+        vals_FWHMHu18 = filling_NaNs_XXXX(vals_FWHMHu18,"vals_FWHMHu18")
+        vals_FWHMHu19 = filling_NaNs_XXXX(vals_FWHMHu19,"vals_FWHMHu19")
+        vals_FWHMHu20 = filling_NaNs_XXXX(vals_FWHMHu20,"vals_FWHMHu20")
+        vals_FWHMHu21 = filling_NaNs_XXXX(vals_FWHMHu21,"vals_FWHMHu21")
+        vals_FWHMHu22 = filling_NaNs_XXXX(vals_FWHMHu22,"vals_FWHMHu22")
+        vals_FWHMHu23 = filling_NaNs_XXXX(vals_FWHMHu23,"vals_FWHMHu23")
+        vals_FWHMHu24 = filling_NaNs_XXXX(vals_FWHMHu24,"vals_FWHMHu24")
+        vals_FWHMHu25 = filling_NaNs_XXXX(vals_FWHMHu25,"vals_FWHMHu25")
+        vals_Bra = filling_NaNs_XXXX(vals_Bra,"vals_Bra")
+        vals_Pfg = filling_NaNs_XXXX(vals_Pfg,"vals_Pfg")
+        vals_FBL = filling_NaNs_XXXX(vals_FBL,"vals_FBL")
+
+
+
+
 
 
     lnprobs = []
     n_print = []; Sig_print = []; M_print = []; ob_print = []; cosi_print = []
     points = []
-    for ichain in range(nburnin,len(sampler.chain[:][0])):
-        for iwalker in range(0,len(sampler.chain)):
-            ### 
-            point = sampler.chain[iwalker][ichain]
-            points.append(point)
-            ### 
-            lnprobs.append(sampler.lnprobability[iwalker][ichain])
-            n_print.append(point[0])
-            Sig_print.append(point[1])
-            M_print.append(point[2])
-            ob_print.append(point[3])
-            cosi_print.append(point[4])
+    
+    ###
+    if 1==2:
+        ### Output file containing the walkers and derived quantities for 
+        ### the prior:
+        prior_file = "prior_and_derivs.out"
+        
+        for ichain in range(nburnin,len(sampler.chain[:][0])):
+            for iwalker in range(0,len(sampler.chain)):
+                ### 
+                point = sampler.chain[iwalker][ichain]
+                points.append(point)
+                ### 
+                lnprobs.append(sampler.lnprobability[iwalker][ichain])
+                n_print.append(point[0])
+                Sig_print.append(point[1])
+                M_print.append(point[2])
+                ob_print.append(point[3])
+                cosi_print.append(point[4])
+    ###
+    if 1==1:
+        ### Output file containing the walkers and derived quantities for 
+        ### the prior:
+        prior_file = "prior2_and_derivs.out"
+        
+        for ichain in range(nburnin,len(sampler2.chain[:][0])):
+            for iwalker in range(0,len(sampler2.chain)):
+                ### 
+                point = sampler2.chain[iwalker][ichain]
+                points.append(point)
+                ### 
+                lnprobs.append(sampler2.lnprobability[iwalker][ichain])
+                n_print.append(point[0])
+                Sig_print.append(point[1])
+                M_print.append(point[2])
+                ob_print.append(point[3])
+                cosi_print.append(point[4])
     
     allow_extrapolation = "no"
+
     
-    print("Evaluating alphaW3W4...")
-    alphaW3W4_print = []
-    [alphaW3W4_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_alphaW3W4,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating MW3...")
-    MW3_print = []
-    [MW3_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_MW3,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating alphaL...")
-    alphaL_print = []
-    [alphaL_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_alphaL,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating MBL...")
-    MBL_print = []
-    [MBL_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_MBL,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating H14...")
-    H14_print = []
-    [H14_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_H14,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating Br alpha...")
-    Bra_print = []
-    [Bra_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_Bra,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating Pf gamma...")
-    Pfg_print = []
-    [Pfg_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_Pfg,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
-    print("Evaluating BL flux...")
-    FBL_print = []
-    [FBL_print.append(lrr.interpLinND(points[ipoint],axis,\
-            vals_FBL,\
-            tp,allow_extrapolation)) for ipoint in range(0,len(points))]
+    def evaluating_XXX(name,vals_XXX):
+        print("Evaluating "+name+"...")
+        XXX_print = []
+        [XXX_print.append(lrr.interpLinND(points[ipoint],axis,\
+                vals_XXX,\
+                tp,allow_extrapolation)) for ipoint in range(0,len(points))]    
+        
+        return XXX_print
+
+
+    B_print = evaluating_XXX("B",vals_B)
+    V_print = evaluating_XXX("V",vals_V)
+    R_print = evaluating_XXX("R",vals_R)
+    I_print = evaluating_XXX("I",vals_I)
+    poldegB_print = evaluating_XXX("poldegB",vals_poldegB)
+    poldegV_print = evaluating_XXX("poldegV",vals_poldegV)
+    poldegR_print = evaluating_XXX("poldegR",vals_poldegR)
+    poldegI_print = evaluating_XXX("poldegI",vals_poldegI)
+    vsini_print = evaluating_XXX("vsini",vals_vsini)
+    alphaW1W2_print = evaluating_XXX("alphaW1W2",vals_alphaW1W2)
+    alphaW2W3_print = evaluating_XXX("alphaW2W3",vals_alphaW2W3)
+    alphaW3W4_print = evaluating_XXX("alphaW3W4",vals_alphaW3W4)
+    MW1_print = evaluating_XXX("MW1",vals_MW1)
+    MW2_print = evaluating_XXX("MW2",vals_MW2)
+    MW3_print = evaluating_XXX("MW3",vals_MW3)
+    MW4_print = evaluating_XXX("MW4",vals_MW4)
+    alphaL_print = evaluating_XXX("alphaL",vals_alphaL)
+    MBL_print = evaluating_XXX("MBL",vals_MBL)
+    Halpha_print = evaluating_XXX("Halpha",vals_Halpha)
+    EWHalpha_print = evaluating_XXX("EWHalpha",vals_EWHalpha)
+    PSHalpha_print = evaluating_XXX("PSHalpha",vals_PSHalpha)
+    FWHMHalpha_print = evaluating_XXX("FWHMHalpha",vals_FWHMHalpha)
+    Hu14_print = evaluating_XXX("Hu14",vals_Hu14)
+    Hu15_print = evaluating_XXX("Hu15",vals_Hu15)
+    Hu16_print = evaluating_XXX("Hu16",vals_Hu16)
+    #Hu17_print = evaluating_XXX("Hu17",vals_Hu17)
+    Hu18_print = evaluating_XXX("Hu18",vals_Hu18)
+    Hu19_print = evaluating_XXX("Hu19",vals_Hu19)
+    Hu20_print = evaluating_XXX("Hu20",vals_Hu20)
+    Hu21_print = evaluating_XXX("Hu21",vals_Hu21)
+    Hu22_print = evaluating_XXX("Hu22",vals_Hu22)
+    Hu23_print = evaluating_XXX("Hu23",vals_Hu23)
+    Hu24_print = evaluating_XXX("Hu24",vals_Hu24)
+    Hu25_print = evaluating_XXX("Hu25",vals_Hu25)
+    FWHMHu14_print = evaluating_XXX("FWHMHu14",vals_FWHMHu14)
+    FWHMHu15_print = evaluating_XXX("FWHMHu15",vals_FWHMHu15)
+    FWHMHu16_print = evaluating_XXX("FWHMHu16",vals_FWHMHu16)
+    #FWHMHu17_print = evaluating_XXX("FWHMHu17",vals_FWHMHu17)
+    FWHMHu18_print = evaluating_XXX("FWHMHu18",vals_FWHMHu18)
+    FWHMHu19_print = evaluating_XXX("FWHMHu19",vals_FWHMHu19)
+    FWHMHu20_print = evaluating_XXX("FWHMHu20",vals_FWHMHu20)
+    FWHMHu21_print = evaluating_XXX("FWHMHu21",vals_FWHMHu21)
+    FWHMHu22_print = evaluating_XXX("FWHMHu22",vals_FWHMHu22)
+    FWHMHu23_print = evaluating_XXX("FWHMHu23",vals_FWHMHu23)
+    FWHMHu24_print = evaluating_XXX("FWHMHu24",vals_FWHMHu24)
+    FWHMHu25_print = evaluating_XXX("FWHMHu25",vals_FWHMHu25)
+    Bra_print = evaluating_XXX("Br alpha",vals_Bra)
+    Pfg_print = evaluating_XXX("Pf gamma",vals_Pfg)
+    FBL_print = evaluating_XXX("BL flux",vals_FBL)
+    
+    
                         
             
 
     fp = open(prior_file,"w")
-
-    fp.write("LNPROB")
-    [fp.write(" "+str(lnprobs[iline])) for iline in range(0,len(lnprobs))]
-    fp.write("\n")
-    fp.write("THETA_0")
-    [fp.write(" "+str(n_print[iline])) for iline in range(0,len(n_print))]
-    fp.write("\n")
-    fp.write("THETA_1")
-    [fp.write(" "+str(Sig_print[iline])) for iline in range(0,len(Sig_print))]
-    fp.write("\n")
-    fp.write("THETA_2")
-    [fp.write(" "+str(M_print[iline])) for iline in range(0,len(M_print))]
-    fp.write("\n")
-    fp.write("THETA_3")
-    [fp.write(" "+str(ob_print[iline])) for iline in range(0,len(ob_print))]
-    fp.write("\n")
-    fp.write("THETA_4")
-    [fp.write(" "+str(cosi_print[iline])) for iline in range(0,len(cosi_print))]
-    fp.write("\n")
     
-    fp.write("ALPHAW3W4")
-    [fp.write(" "+str(alphaW3W4_print[iline])) \
-            for iline in range(0,len(alphaW3W4_print))]
-    fp.write("\n")
-    fp.write("MW3")
-    [fp.write(" "+str(MW3_print[iline])) \
-            for iline in range(0,len(MW3_print))]
-    fp.write("\n")
-    fp.write("ALPHAL")
-    [fp.write(" "+str(alphaL_print[iline])) \
-            for iline in range(0,len(alphaL_print))]
-    fp.write("\n")
-    fp.write("MBL")
-    [fp.write(" "+str(MBL_print[iline])) \
-            for iline in range(0,len(MBL_print))]
-    fp.write("\n")
-    fp.write("H14")
-    [fp.write(" "+str(H14_print[iline])) \
-            for iline in range(0,len(H14_print))]
-    fp.write("\n")
-    fp.write("BRALPHA")
-    [fp.write(" "+str(Bra_print[iline])) \
-            for iline in range(0,len(Bra_print))]
-    fp.write("\n")
-    fp.write("PFGAMMA")
-    [fp.write(" "+str(Pfg_print[iline])) \
-            for iline in range(0,len(Pfg_print))]
-    fp.write("\n")
-    fp.write("BL_FLUX")
-    [fp.write(" "+str(FBL_print[iline])) \
-            for iline in range(0,len(FBL_print))]
-    fp.write("\n")    
+    def print_in_file(name,XX_print):
+        
+        fp.write(name)
+        [fp.write(" "+str(XX_print[iline])) for iline in range(0,len(XX_print))]
+        fp.write("\n")        
+        
+        return
+
+    
+    print_in_file("LNPROB",lnprobs)
+    print_in_file("THETA_0",n_print)
+    print_in_file("THETA_1",Sig_print)
+    print_in_file("THETA_2",M_print)
+    print_in_file("THETA_3",ob_print)
+    print_in_file("THETA_4",cosi_print)
+
+    print_in_file("B",B_print)
+    print_in_file("V",V_print)
+    print_in_file("R",R_print)
+    print_in_file("I",I_print)
+    print_in_file("poldegB",poldegB_print)
+    print_in_file("poldegV",poldegV_print)
+    print_in_file("poldegR",poldegR_print)
+    print_in_file("poldegI",poldegI_print)
+    print_in_file("VSINI",vsini_print)
+    print_in_file("ALPHAW1W2",alphaW1W2_print)
+    print_in_file("ALPHAW2W3",alphaW2W3_print)
+    print_in_file("ALPHAW3W4",alphaW3W4_print)
+    print_in_file("MW1",MW1_print)
+    print_in_file("MW2",MW2_print)
+    print_in_file("MW3",MW3_print)
+    print_in_file("MW4",MW4_print)
+    print_in_file("ALPHAL",alphaL_print)
+    print_in_file("MBL",MBL_print)
+    print_in_file("HALPHA",Halpha_print)
+    print_in_file("EWHALPHA",EWHalpha_print)
+    print_in_file("PSHALPHA",PSHalpha_print)
+    print_in_file("FWHMHALPHA",FWHMHalpha_print)
+    print_in_file("Hu14",Hu14_print)
+    print_in_file("Hu15",Hu15_print)
+    print_in_file("Hu16",Hu16_print)
+    #print_in_file("Hu17",Hu17_print)
+    print_in_file("Hu18",Hu18_print)
+    print_in_file("Hu19",Hu19_print)
+    print_in_file("Hu20",Hu20_print)
+    print_in_file("Hu21",Hu21_print)
+    print_in_file("Hu22",Hu22_print)
+    print_in_file("Hu23",Hu23_print)
+    print_in_file("Hu24",Hu24_print)
+    print_in_file("Hu25",Hu25_print)
+    print_in_file("FWHMHu14",FWHMHu14_print)
+    print_in_file("FWHMHu15",FWHMHu15_print)
+    print_in_file("FWHMHu16",FWHMHu16_print)
+    #print_in_file("FWHMHu17",FWHMHu17_print)
+    print_in_file("FWHMHu18",FWHMHu18_print)
+    print_in_file("FWHMHu19",FWHMHu19_print)
+    print_in_file("FWHMHu20",FWHMHu20_print)
+    print_in_file("FWHMHu21",FWHMHu21_print)
+    print_in_file("FWHMHu22",FWHMHu22_print)
+    print_in_file("FWHMHu23",FWHMHu23_print)
+    print_in_file("FWHMHu24",FWHMHu24_print)
+    print_in_file("FWHMHu25",FWHMHu25_print)
+    print_in_file("BRALPHA",Bra_print)
+    print_in_file("PFGAMMA",Pfg_print)
+    print_in_file("BL_FLUX",FBL_print)
+
 
     fp.close()
 
     sys.exit()
 
 
+### Uncheck this to generate several output files in windows on the Lenorzer diagram 
+### with the previously calculated prior distribution and 
+### some derived quantities:
+if 1==2:
+
+    def is_inside_ellipsoid(xvec,x0vec,sigma2vec):
+        """
+        Returns 'True', if 'xvec' is inside ND ellipsoid.
+        Returns 'False', if not.
+        """
+        
+        ellipsoid = -1.
+        for ix in range(0,len(xvec)):
+            ellipsoid += (xvec[ix]-x0vec[ix])*(xvec[ix]-x0vec[ix])/\
+                        (sigma2vec[ix]*sigma2vec[ix])
+    
+        if not np.isnan(ellipsoid):
+            if ellipsoid <= 0.:
+                return True
+            else:
+                return False
+        else: return False
+
+
+    N_logH14Pfg = 5; minc = -1.; maxc = 0.
+    centers_logH14Pfg = np.array([minc+(maxc-minc)*float(i)/float(N_logH14Pfg-1) \
+            for i in range(0,N_logH14Pfg)])
+    sigma2s_logH14Pfg = np.array([2.0*(maxc-minc)/float(N_logH14Pfg-1)*\
+            2.0*(maxc-minc)/float(N_logH14Pfg-1) for i in range(0,N_logH14Pfg)])
+
+    N_logH14Bra = 5; minc = -1.5; maxc = 0.
+    centers_logH14Bra = np.array([minc+(maxc-minc)*float(i)/float(N_logH14Bra-1) \
+            for i in range(0,N_logH14Bra)])
+    sigma2s_logH14Bra = np.array([2.0*(maxc-minc)/float(N_logH14Bra-1)*\
+            2.0*(maxc-minc)/float(N_logH14Bra-1) for i in range(0,N_logH14Bra)])
+
+    N_logH14cont = 3; minc = 0.0; maxc = 7.0
+    centers_logH14cont = np.array([minc+(maxc-minc)*float(i)/float(N_logH14cont-1) \
+            for i in range(0,N_logH14cont)])
+    sigma2s_logH14cont = np.array([2.0*(maxc-minc)/float(N_logH14cont-1)*\
+            2.0*(maxc-minc)/float(N_logH14cont-1) for i in range(0,N_logH14cont)])
+
+
+    centers = []
+    sigma2s = []
+    for ix in range(0,N_logH14Pfg):
+        for iy in range(0,N_logH14Bra):
+            for iz in range(0,N_logH14cont):
+                centers.append([centers_logH14Pfg[ix],\
+                        centers_logH14Bra[iy],centers_logH14cont[iz]])
+                sigma2s.append([sigma2s_logH14Pfg[ix],\
+                        sigma2s_logH14Bra[iy],sigma2s_logH14cont[iz]])
 
 
 
 
+    ### Output file containing the walkers and derived quantities for 
+    ### the prior:
+    prior_file = "prior2_and_derivs.out"
+    ### 
+    fp = open(prior_file,"r")
+    linesprior = fp.readlines()
+    fp.close()
+    linesprior = [x.split() for x in linesprior]
 
+    ### 
+    for iline in range(0,len(linesprior)):
+            
+        if linesprior[iline][0] == "THETA_0": # n
+            idx_THETA_0 = iline
+        if linesprior[iline][0] == "THETA_1": # Sig
+            idx_THETA_1 = iline
+        if linesprior[iline][0] == "THETA_2": # M
+            idx_THETA_2 = iline
+        if linesprior[iline][0] == "THETA_3": # ob
+            idx_THETA_3 = iline
+        if linesprior[iline][0] == "THETA_4": # cosi
+            idx_THETA_4 = iline
+    
+        if linesprior[iline][0] == "Hu14":
+            idx_Hu14 = iline
+        if linesprior[iline][0] == "BRALPHA":
+            idx_BRALPHA = iline
+        if linesprior[iline][0] == "PFGAMMA":
+            idx_PFGAMMA = iline
+        if linesprior[iline][0] == "BL_FLUX":
+            idx_BL_FLUX = iline
+
+    ### 
+    output_filename = "./Lenorzer_windows/window_XXX.out"
+
+
+    if len(linesprior[idx_THETA_0]) > 1:
+        minmax0 = \
+            [np.nanmin([float(x) for x in linesprior[idx_THETA_0][1:]]),\
+            np.nanmax([float(x) for x in linesprior[idx_THETA_0][1:]])]
+    else:
+        minmax0 = [np.nan,np.nan]
+    if len(linesprior[idx_THETA_1]) > 1:
+        minmax1 = \
+            [np.nanmin([float(x) for x in linesprior[idx_THETA_1][1:]]),\
+            np.nanmax([float(x) for x in linesprior[idx_THETA_1][1:]])]
+    else:
+        minmax1 = [np.nan,np.nan]        
+    if len(linesprior[idx_THETA_2]) > 1:
+        minmax2 = \
+            [np.nanmin([float(x) for x in linesprior[idx_THETA_2][1:]]),\
+            np.nanmax([float(x) for x in linesprior[idx_THETA_2][1:]])]
+    else:
+        minmax2 = [np.nan,np.nan]        
+    if len(linesprior[idx_THETA_3]) > 1:
+        minmax3 = \
+            [np.nanmin([float(x) for x in linesprior[idx_THETA_3][1:]]),\
+            np.nanmax([float(x) for x in linesprior[idx_THETA_3][1:]])]
+    else:
+        minmax3 = [np.nan,np.nan]                
+    if len(linesprior[idx_THETA_4]) > 1:
+        minmax4 = \
+            [np.nanmin([float(x) for x in linesprior[idx_THETA_4][1:]]),\
+            np.nanmax([float(x) for x in linesprior[idx_THETA_4][1:]])]
+    else:
+        minmax4 = [np.nan,np.nan]    
+
+    print(minmax2)
+    print(minmax3)
+    print(minmax0)
+    print(minmax1)
+    print(minmax4)
+
+    for iwind in range(0,len(centers)):
+    
+        f0 = open(output_filename.replace("XXX",str(iwind)),"w")
+    
+        lines_write = [[] for iline in range(0,len(linesprior))]
+        for iline in range(0,len(linesprior)):
+            lines_write[iline].append(linesprior[iline][0])
+    
+        for iel in range(1,len(linesprior[0])):
+        
+            xvec = [float(linesprior[idx_Hu14][iel])/\
+                            float(linesprior[idx_PFGAMMA][iel]),\
+                    float(linesprior[idx_Hu14][iel])/\
+                            float(linesprior[idx_BRALPHA][iel]),\
+                    float(linesprior[idx_Hu14][iel])/\
+                            float(linesprior[idx_BL_FLUX][iel])*(3.47-3.41)*1e4]
+        
+            if is_inside_ellipsoid(xvec,centers[iwind],sigma2s[iwind]) \
+                    and xvec[2] >= 0.:
+                for iline in range(0,len(linesprior)):
+                    lines_write[iline].append(linesprior[iline][iel])
+    
+        model_pars = []; x_pars = []
+        for iel in range(1,50+1):
+            if len(lines_write[0]) > 1:
+                iell = np.random.random_integers(1,len(lines_write[0])-1)
+                model_pars.append([\
+                        (float(lines_write[idx_THETA_2][iell])-minmax2[0])/\
+                                (minmax2[1]-minmax2[0]),\
+                        (float(lines_write[idx_THETA_3][iell])-minmax3[0])/\
+                                (minmax3[1]-minmax3[0]),\
+                        (float(lines_write[idx_THETA_0][iell])-minmax0[0])/\
+                                (minmax0[1]-minmax0[0]),\
+                        (float(lines_write[idx_THETA_1][iell])-minmax1[0])/\
+                                (minmax1[1]-minmax1[0]),\
+                        (float(lines_write[idx_THETA_4][iell])-minmax4[0])/\
+                                (minmax4[1]-minmax4[0])\
+                        ])
+            else:
+                model_pars.append([np.nan,np.nan,np.nan,np.nan,np.nan])
+            x_pars.append([0,1,2,3,4])
+        
+        fig = plt.figure(figsize = (2.2,2.2))
+        for iel in range(0,len(x_pars)):
+            plt.plot(x_pars[iel],model_pars[iel],\
+                    color=(0,0,0),\
+                    linewidth=0.3)
+        plt.ylim([0.,1.])
+        plt.savefig("parallell_"+str(iwind)+".png")
+        plt.close()
+            
+        
+        for iline in range(0,len(lines_write)):
+            [f0.write(str(lines_write[iline][iel])+" ") \
+                    for iel in range(0,len(lines_write[iline]))]
+            f0.write("\n")
+
+
+        f0.close()
+
+
+    sys.exit()
 
 
 
@@ -895,7 +1433,267 @@ if 1==2:
 ### Directory for the figures:
 figures = "Figures/"
 
+#############################
+### Plotting Big-corner diagram (FOR PAPER)
+if 1==2:
 
+    ### Output file containing the walkers and derived quantities for 
+    ### the prior:
+    prior_file = "prior2_and_derivs.out"
+    ### 
+    fp = open(prior_file,"r")
+    linesprior = fp.readlines()
+    fp.close()
+    linesprior = [x.split() for x in linesprior]
+    ### 
+    Nprior = np.nanmin([100000,len(linesprior[0])-1])
+
+    ### 
+    for iline in range(0,len(linesprior)):
+        
+        if linesprior[iline][0] == "THETA_0": # n
+            idx_THETA_0 = iline
+        if linesprior[iline][0] == "THETA_1": # Sig
+            idx_THETA_1 = iline
+        if linesprior[iline][0] == "THETA_2": # M
+            idx_THETA_2 = iline
+        if linesprior[iline][0] == "THETA_3": # ob
+            idx_THETA_3 = iline
+        if linesprior[iline][0] == "THETA_4": # cosi
+            idx_THETA_4 = iline
+
+        if linesprior[iline][0] == "MBL":
+            idx_MBL = iline
+        if linesprior[iline][0] == "Hu14":
+            idx_Hu14 = iline
+        if linesprior[iline][0] == "BRALPHA":
+            idx_BRALPHA = iline
+        if linesprior[iline][0] == "PFGAMMA":
+            idx_PFGAMMA = iline
+        if linesprior[iline][0] == "BL_FLUX":
+            idx_BL_FLUX = iline
+        if linesprior[iline][0] == "VSINI":
+            idx_VSINI = iline
+            
+            
+    samples = np.zeros((Nprior,9)); samples[:,:] = np.nan
+    
+    ii = 0
+    i = 0
+    while ii < Nprior and i < len(linesprior[0])-1:
+    
+        if \
+                ~np.isnan(float(linesprior[idx_Hu14][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_Hu14][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_PFGAMMA][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_PFGAMMA][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_BRALPHA][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_BRALPHA][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_BL_FLUX][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_BL_FLUX][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_VSINI][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_VSINI][-1-i]))) and \
+                -1.8 <= np.log10(float(linesprior[idx_Hu14][-1-i])/\
+                        float(linesprior[idx_PFGAMMA][-1-i])) <= 0.5 and \
+                -1.8 <= np.log10(float(linesprior[idx_Hu14][-1-i])/\
+                        float(linesprior[idx_BRALPHA][-1-i])) <= 0.5 and \
+                -3. <= float(linesprior[idx_Hu14][-1-i])/\
+                        float(linesprior[idx_BL_FLUX][-1-i])*(3.47-3.41)*1e4 <= 9. \
+                :
+            
+            samples[ii,0] = float(linesprior[idx_THETA_0][-1-i])
+            samples[ii,1] = float(linesprior[idx_THETA_1][-1-i])
+            samples[ii,2] = float(linesprior[idx_THETA_2][-1-i])
+            samples[ii,3] = float(linesprior[idx_THETA_3][-1-i])
+            samples[ii,4] = float(linesprior[idx_THETA_4][-1-i])
+            samples[ii,5] = np.log10(float(linesprior[idx_Hu14][-1-i])/\
+                        float(linesprior[idx_PFGAMMA][-1-i]))
+            samples[ii,6] = np.log10(float(linesprior[idx_Hu14][-1-i])/\
+                        float(linesprior[idx_BRALPHA][-1-i]))
+            samples[ii,7] = float(linesprior[idx_Hu14][-1-i])/\
+                        float(linesprior[idx_BL_FLUX][-1-i])*(3.47-3.41)*1e4
+            samples[ii,8] = float(linesprior[idx_VSINI][-1-i])
+            
+            ii += 1
+            
+        i += 1
+        
+    if 1==1:
+        ranges = []
+        for i in range(0,len(samples[0,:])):
+            mini = np.nanmin([samples[j,i] \
+                for j in range(0,len(samples[:,i]))])
+            maxi = np.nanmax([samples[j,i] \
+                for j in range(0,len(samples[:,i]))])
+        
+            if i == 0:
+                ranges.append((3.,4.5))
+            elif i == 1:
+                ranges.append((np.log10(0.02),np.log10(4.0)))
+            elif i == 2:
+                ranges.append((4.,20.))
+            elif i == 3:
+                ranges.append((1.2,1.4))
+            elif i == 4:
+                ranges.append((0.,1.))
+            elif i == 5:
+                ranges.append((np.log10(0.02),np.log10(3.0)))
+            elif i == 6:
+                ranges.append((np.log10(0.02),np.log10(3.0)))
+            elif i == 7:
+                ranges.append((-3.,9.))
+            else:
+                ranges.append((mini+0.0*(maxi-mini),\
+                                maxi-0.0*(maxi-mini)) )
+                
+        
+        fig = corner.corner(samples, \
+        range=ranges, \
+        labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
+        "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$",\
+        "$\log\left(\\frac{F(\\mathrm{Hu}14)}{F(\\mathrm{Pf}\gamma)}\\right)$",\
+        "$\log\left(\\frac{F(\\mathrm{Hu}14)}{F(\\mathrm{Br}\\alpha)}\\right)$",\
+        "$\\frac{F(\\mathrm{Hu}14)}{F(\lambda_B^*)}\,[\\mathrm{A}]$",\
+        "$v\sin i\,[\\mathrm{km/s}]$"],\
+        bins=60)
+        #plt.tight_layout()
+        plt.savefig("corner_Lenorzer.png")
+        plt.close()
+            
+            
+    sys.exit()
+
+
+
+### 
+if 1==2:
+
+    ### Output file containing the walkers and derived quantities for 
+    ### the prior:
+    prior_file = "prior2_and_derivs.out"
+    ### 
+    fp = open(prior_file,"r")
+    linesprior = fp.readlines()
+    fp.close()
+    linesprior = [x.split() for x in linesprior]
+    ### 
+    Nprior = np.nanmin([100000,len(linesprior[0])-1])
+
+    ### 
+    for iline in range(0,len(linesprior)):
+        
+        if linesprior[iline][0] == "THETA_0": # n
+            idx_THETA_0 = iline
+        if linesprior[iline][0] == "THETA_1": # Sig
+            idx_THETA_1 = iline
+        if linesprior[iline][0] == "THETA_2": # M
+            idx_THETA_2 = iline
+        if linesprior[iline][0] == "THETA_3": # ob
+            idx_THETA_3 = iline
+        if linesprior[iline][0] == "THETA_4": # cosi
+            idx_THETA_4 = iline
+
+        if linesprior[iline][0] == "VSINI":
+            idx_VSINI = iline
+        if linesprior[iline][0] == "EWHALPHA":
+            idx_EWHALPHA = iline
+        if linesprior[iline][0] == "PSHALPHA":
+            idx_PSHALPHA = iline
+
+        if linesprior[iline][0] == "I":
+            idx_I = iline            
+        if linesprior[iline][0] == "poldegV":
+            idx_poldegV = iline
+            
+    samples = np.zeros((Nprior,10)); samples[:,:] = np.nan
+    
+    ii = 0
+    i = 0
+    while ii < Nprior and i < len(linesprior[0])-1:
+    
+        if \
+                ~np.isnan(float(linesprior[idx_VSINI][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_VSINI][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_EWHALPHA][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_EWHALPHA][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_PSHALPHA][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_PSHALPHA][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_I][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_I][-1-i]))) and \
+                ~np.isnan(float(linesprior[idx_poldegV][-1-i])) and \
+                ~np.isinf(abs(float(linesprior[idx_poldegV][-1-i]))) \
+                :
+            
+            if -0.6 <= float(linesprior[idx_THETA_1][-1-i]) <= 0.0 and \
+                3.2 <= float(linesprior[idx_THETA_0][-1-i]) <= 3.8 and \
+                10. <= float(linesprior[idx_THETA_2][-1-i]) <= 14. and \
+                0.0 <= float(linesprior[idx_PSHALPHA][-1-i]) and \
+                0.0 <= float(linesprior[idx_poldegV][-1-i]) \
+                :
+            
+            
+            
+                samples[ii,0] = float(linesprior[idx_THETA_0][-1-i])
+                samples[ii,1] = float(linesprior[idx_THETA_1][-1-i])
+                samples[ii,2] = float(linesprior[idx_THETA_2][-1-i])
+                samples[ii,3] = float(linesprior[idx_THETA_3][-1-i])
+                samples[ii,4] = float(linesprior[idx_THETA_4][-1-i])
+                samples[ii,5] = float(linesprior[idx_VSINI][-1-i])
+                samples[ii,6] = float(linesprior[idx_EWHALPHA][-1-i])
+                samples[ii,7] = float(linesprior[idx_PSHALPHA][-1-i])
+                samples[ii,8] = float(linesprior[idx_I][-1-i])
+                samples[ii,9] = float(linesprior[idx_poldegV][-1-i])
+
+            
+                ii += 1
+            
+        i += 1
+        
+    if 1==1:
+        ranges = []
+        for i in range(0,len(samples[0,:])):
+            mini = np.nanmin([samples[j,i] \
+                for j in range(0,len(samples[:,i]))])
+            maxi = np.nanmax([samples[j,i] \
+                for j in range(0,len(samples[:,i]))])
+        
+            #if i == 5:
+            #    ranges.append((np.log10(0.02),np.log10(3.0)))
+            #elif i == 6:
+            #    ranges.append((np.log10(0.02),np.log10(3.0)))
+            #if i == 7:
+            #    ranges.append((0.,maxi-0.0*(maxi-mini)))
+            #elif i == 9:
+            #    ranges.append((0.,maxi-0.0*(maxi-mini)))
+            #else:
+            ranges.append(  (mini+0.0*(maxi-mini),\
+                                maxi-0.0*(maxi-mini)) )
+                
+        
+        fig = corner.corner(samples, \
+        range=ranges, \
+        labels = ["$n$","$\log(\\Sigma\,[\mathrm{g\,cm^{-2}}])$",\
+        "$M\,[M_\odot]$","$1+0.5W^2$","$\cos i$",\
+        "$v\sin i\,[\\mathrm{km/s}]$",\
+        "$EW\,[\\mathrm{A}]$","$PS\,[km/s]$",\
+        "$I\,[\\mathrm{mag}]$","$P_V$"],
+        bins=60)
+        #plt.tight_layout()
+        plt.savefig("corner_EW_PS_vsini.png")
+        plt.close()
+            
+            
+    sys.exit()
+
+
+
+
+
+
+
+
+#############################
+### Plotting Mennickent-based CMD (FOR PAPER)
 if 1==2:
 
 
@@ -973,7 +1771,18 @@ if 1==2:
         alphaW3W4.append(DATA_LBAND[ifile][6][4][0])
         erralphaW3W4.append(DATA_LBAND[ifile][6][4][1])
 
-
+    H14BL = []
+    errH14BL = []
+    for ifile in range(0,len(DATA_LBAND)):
+        H14BL.append(fluxhumphreys[ifile,14,0]/DATA_LBAND[ifile][5][0][0]*\
+                (DATA_LBAND[ifile][5][0][3]-DATA_LBAND[ifile][5][0][2]))
+        errH14BL.append(
+                read_data.err_frac(fluxhumphreys[ifile,14,0]*\
+                (DATA_LBAND[ifile][5][0][3]-DATA_LBAND[ifile][5][0][2]),\
+                DATA_LBAND[ifile][5][0][0],fluxhumphreys[ifile,14,1]*\
+                (DATA_LBAND[ifile][5][0][3]-DATA_LBAND[ifile][5][0][2]),\
+                DATA_LBAND[ifile][5][0][1])\
+                )
 
     plt.figure(figsize=(11,8))
     ### 
@@ -982,9 +1791,22 @@ if 1==2:
     plt.scatter(Wal_alphaL,Wal_MBL,alpha=0.1)
     ### 
     for i in range(0,len(DATA_LBAND)):
-        plt.errorbar(alphaL[i],BL[i],xerr=erralphaL[i],yerr=errMW3[i],color="red",\
-            linewidth=2.)
+        plt.errorbar(alphaL[i],BL[i],xerr=erralphaL[i],yerr=errMW3[i],\
+                color="red",\
+                linewidth=0.5)
         plt.annotate("HD "+names[i],[alphaL[i],BL[i]],size=7.)
+    cs = [np.arcsinh(2e4/x[7][1][0]) for x in DATA_LBAND]
+    N = 11
+    theticks = [-0.5*(np.nanmax(cs)-np.nanmin(cs))+\
+            (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+            for i in range(0,N)]
+    inv_theticks = [np.sinh(x) for x in theticks]
+    ss=plt.scatter(alphaL[:],BL[:],c=cs,\
+            s=1e4*(np.abs(H14BL[:])+np.abs(errH14BL[:]))/0.06e4,\
+            cmap = 'gnuplot',marker = "o",alpha=0.8)
+    cbar = plt.colorbar(ss, ticks = theticks)
+    cbar.ax.set_yticklabels([round(x,2) for x in inv_theticks])
+    cbar.set_label("$\\tau_1^{-1}\,[2\\times 10^4\mathrm{day^{-1}}]$")
     ### 
     plt.xlabel("$\\alpha_L$")
     plt.ylabel("$M_{B_L}\,\mathrm{[mag]}$")
@@ -1039,52 +1861,7 @@ if 1==2:
 
 #############################
 ### Plotting observed Lenorzer Diagrams
-if 1==1:
-    
-    
-    
-    ### Output file containing the walkers and derived quantities for 
-    ### the prior:
-    prior_file = "prior_and_derivs.out"
-    ### 
-    fp = open(prior_file,"r")
-    linesprior = fp.readlines()
-    fp.close()
-    linesprior = [x.split() for x in linesprior]
-    ### 
-    Nprior = np.nanmin([5000,len(linesprior[0])-1])
-    
-    ### 
-    for iline in range(0,len(linesprior)):
-        if linesprior[iline][0] == "H14":
-            idx_H14 = iline
-        if linesprior[iline][0] == "BRALPHA":
-            idx_Bra = iline
-        if linesprior[iline][0] == "PFGAMMA":
-            idx_Pfg = iline
-        if linesprior[iline][0] == "BL_FLUX":
-            idx_FBL = iline
-    ### 
-    Wal_len_x = []
-    Wal_len_y = []
-    Wal_len_z = []
-    el_count = 1
-    i = 1
-    while el_count <= Nprior and i < len(linesprior[iline]):
-        if not np.isnan(float(linesprior[idx_H14][i])) \
-                and not np.isnan(float(linesprior[idx_Bra][i])) \
-                and not np.isnan(float(linesprior[idx_Pfg][i])) \
-                and not np.isnan(float(linesprior[idx_FBL][i])):
-            Wal_len_x.append(float(linesprior[idx_H14][i])/\
-                    float(linesprior[idx_Pfg][i]))
-            Wal_len_y.append(float(linesprior[idx_H14][i])/\
-                    float(linesprior[idx_Bra][i]))
-            Wal_len_z.append(float(linesprior[idx_H14][i])/\
-                    float(linesprior[idx_FBL][i])*(3.47-3.41)*1e4)
-            el_count += 1
-        i += 1    
-    
-    
+if 1==2:
     
 
     ### Parameters for the double arcsinh scaling:
@@ -1094,7 +1871,19 @@ if 1==1:
                 ### nearly logarithmic behaviour of the scale for them.
     down1 = 0.2 * up1   ### This makes a "compression" of the negative axis.
     down2 = 5.
+    ### Defining the labels of the axis
+    axisvalsy=np.array([5.,2.,1.,0.5,0.2,0.1,0.05,0.,\
+                            -0.1,-0.5,-5.,-50.,-500.])
+    axisvalsx=np.array([5.,2.,1.,0.5,0.2,0.1,0.05,0.,\
+                            -0.5,-50.,-500.])
+    ### Obtaing the positions of the above defined labels of the axis
+    transf_axisvalsy=np.array([lrr.scale_two_arcsinh(axisvalsy[i],\
+            up1,up2,down1,down2) for i in xrange(0,len(axisvalsy))])
+    transf_axisvalsx=np.array([lrr.scale_two_arcsinh(axisvalsx[i],\
+            up1,up2,down1,down2) for i in xrange(0,len(axisvalsx))])
 
+
+    ### 
     names = []
     XL = []
     errXL = []
@@ -1127,19 +1916,6 @@ if 1==1:
                 (DATA_LBAND[ifile][5][0][3]-DATA_LBAND[ifile][5][0][2]),\
                 DATA_LBAND[ifile][5][0][1])\
                 )
-    
-
-            
-    ### Defining the labels of the axis
-    axisvalsy=np.array([5.,2.,1.,0.5,0.2,0.1,0.05,0.,\
-                            -0.1,-0.5,-5.,-50.,500.])
-    axisvalsx=np.array([5.,2.,1.,0.5,0.2,0.1,0.05,0.,\
-                            -0.5,-50.,500.])
-    ### Obtaing the positions of the above defined labels of the axis
-    transf_axisvalsy=np.array([lrr.scale_two_arcsinh(axisvalsy[i],\
-            up1,up2,down1,down2) for i in xrange(0,len(axisvalsy))])
-    transf_axisvalsx=np.array([lrr.scale_two_arcsinh(axisvalsx[i],\
-            up1,up2,down1,down2) for i in xrange(0,len(axisvalsx))])
 
 
     ### Converting to the double arcsinh scale, for plotting:
@@ -1152,14 +1928,10 @@ if 1==1:
     errYLplot=np.array([abs(lrr.scale_two_arcsinh(YL[i],up1,up2,down1,down2,\
         m="deriv"))*errYL[i] for i in range(0,len(errYL))])
 
-    ### 
-    Wal_len_x_plot = [lrr.scale_two_arcsinh(Wal_len_x[i],up1,up2,down1,down2) \
-        for i in range(0,len(Wal_len_x))]
-    Wal_len_y_plot = [lrr.scale_two_arcsinh(Wal_len_y[i],up1,up2,down1,down2) \
-        for i in range(0,len(Wal_len_x))]
 
     ### 
-    plt.figure(1,figsize=(11,11), dpi=100)
+    plt.figure(1,figsize=(11,9), dpi=100)
+
     ### 
     plt.plot([0.,0.],[-1e32,1e32],linestyle=":",color="black",\
         linewidth=0.6)  ### Vertical dotted line
@@ -1173,40 +1945,180 @@ if 1==1:
     plt.plot([lrr.scale_two_arcsinh(10.**type1_x,\
             up1,up2,down1,down2),lrr.scale_two_arcsinh(10.**type1_x,\
             up1,up2,down1,down2)],\
-                [lrr.scale_two_arcsinh(10.**type1_y,\
+            [lrr.scale_two_arcsinh(10.**type1_y,\
             up1,up2,down1,down2),1e32],linestyle=":",color="blue",\
-        linewidth=0.5)  ### Vertical line delimiting "type 1 region"
+            linewidth=0.5)  ### Vertical line delimiting "type 1 region"
     plt.plot([lrr.scale_two_arcsinh(10.**type1_x,\
             up1,up2,down1,down2),1e32],[lrr.scale_two_arcsinh(10.**type1_y,\
             up1,up2,down1,down2),lrr.scale_two_arcsinh(10.**type1_y,\
             up1,up2,down1,down2)],linestyle=":",color="blue",\
-        linewidth=0.5)  ### Horizontal line delimiting "type 1 region"
+            linewidth=0.5)  ### Horizontal line delimiting "type 1 region"
     
-    for i in range(0,len(Wal_len_x_plot)):
-        if Wal_len_z[i] >= 0.:
-            markk="o"
-        else:
-            markk="^"    
-        plt.scatter([Wal_len_x_plot[i]],[Wal_len_y_plot[i]],marker=markk,\
-                s=1e4*(np.abs(Wal_len_z[i]))/0.06e4,\
-                color="cyan",facecolors="None",alpha=0.1)
+    ### 
+    if 1==1:
+        
+        ### Output file containing the walkers and derived quantities for 
+        ### the prior:
+        prior_file = "prior2_and_derivs.out"
+        ### 
+        fp = open(prior_file,"r")
+        linesprior = fp.readlines()
+        fp.close()
+        linesprior = [x.split() for x in linesprior]
+        ### 
+        Nprior = np.nanmin([5000,len(linesprior[0])-1])
     
+        ### 
+        for iline in range(0,len(linesprior)):
+            if linesprior[iline][0] == "Hu14":
+                idx_Hu14 = iline
+            if linesprior[iline][0] == "BRALPHA":
+                idx_Bra = iline
+            if linesprior[iline][0] == "PFGAMMA":
+                idx_Pfg = iline
+            if linesprior[iline][0] == "BL_FLUX":
+                idx_FBL = iline
+            if linesprior[iline][0] == "THETA_0": # n
+                idx_GRAD1 = iline
+            if linesprior[iline][0] == "THETA_1": # Sig
+            #if linesprior[iline][0] == "THETA_2": # M
+            #if linesprior[iline][0] == "THETA_3": # ob
+            #if linesprior[iline][0] == "THETA_4": # cosi
+                idx_GRAD2 = iline
+        ### 
+        Wal_len_x = []
+        Wal_len_y = []
+        Wal_len_z = []
+        grad1_len = []
+        grad2_len = []
+        el_count = 1
+        i = 1
+        while el_count <= Nprior and i < len(linesprior[iline]):
+            if not np.isnan(float(linesprior[idx_Hu14][i])) \
+                    and not np.isnan(float(linesprior[idx_Bra][i])) \
+                    and not np.isnan(float(linesprior[idx_Pfg][i])) \
+                    and not np.isnan(float(linesprior[idx_FBL][i])):
+                Wal_len_x.append(float(linesprior[idx_Hu14][i])/\
+                        float(linesprior[idx_Pfg][i]))
+                Wal_len_y.append(float(linesprior[idx_Hu14][i])/\
+                        float(linesprior[idx_Bra][i]))
+                Wal_len_z.append(float(linesprior[idx_Hu14][i])/\
+                        float(linesprior[idx_FBL][i])*(3.47-3.41)*1e4)
+                grad1_len.append(float(linesprior[idx_GRAD1][i]))
+                grad2_len.append(float(linesprior[idx_GRAD2][i]))
+                el_count += 1
+            i += 1    
+    
+
+        ### 
+        Wal_len_x_plot = [lrr.scale_two_arcsinh(Wal_len_x[i],up1,up2,down1,down2) \
+                for i in range(0,len(Wal_len_x))]
+        Wal_len_y_plot = [lrr.scale_two_arcsinh(Wal_len_y[i],up1,up2,down1,down2) \
+                for i in range(0,len(Wal_len_x))]
+
+        for i in range(0,len(Wal_len_x_plot)):
+            if Wal_len_z[i] >= 0.:
+                markk="o"
+            else:
+                markk="^"    
+            plt.scatter([Wal_len_x_plot[i]],[Wal_len_y_plot[i]],marker=markk,\
+                    s=1e4*(np.abs(Wal_len_z[i]))/0.06e4,\
+                    c=(
+                    (grad1_len[i]-np.nanmin(grad1_len))/\
+                    (np.nanmax(grad1_len)-np.nanmin(grad1_len)),\
+                    0.0,\
+                    0.0\
+                    #(grad2_len[i]-np.nanmin(grad2_len))/\
+                    #(np.nanmax(grad2_len)-np.nanmin(grad2_len)), \
+                    ),\
+                    facecolors="None",alpha=0.07)
+                    
+                    
+    ### tau1^-1
+    if 1==1:
+        cs = [np.arcsinh(2e4/x[7][1][0]) for x in DATA_LBAND]
+        N = 11
+        theticks = [-0.5*(np.nanmax(cs)-np.nanmin(cs))+\
+                (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+                for i in range(0,N)]
+        inv_theticks = [np.sinh(x) for x in theticks]
+    ### MB [mag]
+    if 1==2:
+        cs = [x[5][3][0] for x in DATA_LBAND]
+        N = 11
+        theticks = [np.nanmin(cs)+\
+                (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+                for i in range(0,N)]
+        inv_theticks = [x for x in theticks]    
+    ### alphaL
+    if 1==2:
+        cs = [x[5][4][0] for x in DATA_LBAND]
+        N = 11
+        theticks = [np.nanmin(cs)+\
+                (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+                for i in range(0,N)]
+        inv_theticks = [x for x in theticks]
+    ### vsini [km/s]
+    if 1==2:
+        cs = [x[9] for x in DATA_LBAND]
+        N = 11
+        theticks = [np.nanmin(cs)+\
+                (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+                for i in range(0,N)]
+        inv_theticks = [x for x in theticks]
+    ### -EW/lambda(Halpha)
+    if 1==2:
+        cs = [-x[10][0] for x in DATA_LBAND]
+        N = 11
+        theticks = [np.nanmin(cs)+\
+                (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+                for i in range(0,N)]
+        inv_theticks = [x for x in theticks]
+    ### -EW/lambda(Halpha)*vsini [km/s]
+    if 1==2:
+        cs = [-x[10][0]*x[9] for x in DATA_LBAND]
+        N = 11
+        theticks = [np.nanmin(cs)+\
+                (np.nanmax(cs)-np.nanmin(cs))*float(i)/float(N-1) \
+                for i in range(0,N)]
+        inv_theticks = [x for x in theticks]
+    
+    
+    markers = []
     for i in range(0,len(XLplot)):
-        if H14BL[i] >= 0.:
-            markk="o"
+        if ~np.isnan(H14BL[i]):
+            if H14BL[i] >= 0.:
+                markk="o"
+            else:
+                markk="^"
         else:
-            markk="^"
-        plt.scatter([XLplot[i]],[YLplot[i]],marker=markk,\
-                s=1e4*(np.abs(H14BL[i])+np.abs(errH14BL[i]))/0.06e4,\
-                color="blue",facecolors="None")
-        plt.scatter([XLplot[i]],[YLplot[i]],marker=markk,\
-                s=1e4*(np.abs(H14BL[i])-np.abs(errH14BL[i]))/0.06e4,\
-                color="red",facecolors="None")
+            markk = "."
+        markers.append(markk)
+    
+    ss = plt.scatter(XLplot[:],YLplot[:],marker="o",\
+            s=1e4*(np.abs(H14BL[:])+np.abs(errH14BL[:]))/0.06e4,\
+            facecolors="None",\
+            c=cs,cmap = 'gnuplot',alpha = 0.8)    
+    plt.scatter(XLplot[:],YLplot[:],marker="o",\
+            s=1e4*(np.abs(H14BL[:])+np.abs(errH14BL[:]))/0.06e4,\
+            facecolors="None",\
+            color = "black")
+    plt.scatter(XLplot[:],YLplot[:],marker="o",\
+            s=1e4*(np.abs(H14BL[:])-np.abs(errH14BL[:]))/0.06e4,\
+            facecolors="None",\
+            color = "black")
+    
+
+    cbar = plt.colorbar(ss, ticks = theticks)
+    cbar.ax.set_yticklabels([round(x,2) for x in inv_theticks])
+    cbar.set_label("$\\tau_1^{-1}\,[2\\times 10^4\mathrm{day^{-1}}]$")
+    for i in range(0,len(XLplot)):
         plt.errorbar([XLplot[i]],[YLplot[i]],xerr=errXLplot[i],\
                 yerr=errYLplot[i],color="black")
-        plt.annotate("HD "+names[i],[XLplot[i],YLplot[i]],size=7.)
+        plt.annotate("HD "+names[i],[XLplot[i],YLplot[i]],size=7.,\
+                color="green")
     
-    if 1==1:
+    if 1==2:
 
         GranadaDATA, MennickentDATA = read_data.get_otherpapers()
         
@@ -1244,7 +2156,7 @@ if 1==1:
             plt.annotate("HD "+names_granada[i],\
                     [x_granada_plot[i],y_granada_plot[i]],size=7.,color="red")
 
-    if 1==1:
+    if 1==2:
 
         GranadaDATA, MennickentDATA = read_data.get_otherpapers()
 
@@ -1325,6 +2237,7 @@ if 1==1:
             up1,up2,down1,down2),lrr.scale_two_arcsinh(8.,\
             up1,up2,down1,down2)])
     
+    plt.gca().set_aspect('equal', adjustable='box')
     plt.tight_layout()
     plt.savefig(figures+"LENORZERDATA.png")
 
@@ -1585,9 +2498,9 @@ if 1==2:
     figtitle=[]
     annotate_vec=[]
     
-    i_n = npar.index("4.5")
+    i_n = npar.index("3.5")
     i_sig = sigpar.index("1.65")
-    i_M = Mpar.index("04.20")
+    i_M = Mpar.index("14.60")
     i_ob = obpar.index("1.40")
     i_cosi = cosipar.index("1.0")
 
@@ -1897,6 +2810,8 @@ if 1==2:
         plt.ylim([2.5,-2.5])
         
         plt.savefig(figures+"HUMPHREYS_"+figname[k])
+        
+    sys.exit()
 
 
 
@@ -2474,7 +3389,7 @@ if 1==2:
 ### Now, comes the part 2 of the analysis: MCMC bayesian inference for comparison 
 ### of models and observations.
 
-Part2 = True
+Part2 = False
 ### File containing the operations to be performed on the Be stars
 operations_on_stars = "operations_on_stars.inp"
 
